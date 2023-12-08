@@ -1,8 +1,7 @@
 from fastapi import FastAPI
 
+from ecommerceapi.routers.category import router as category_router
+
 app = FastAPI()
 
-
-@app.get("/")
-async def root():
-    return {"message": "Hello, world!"}
+app.include_router(category_router, prefix="/category")
