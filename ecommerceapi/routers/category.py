@@ -6,7 +6,7 @@ router = APIRouter()
 category_table = {}
 
 
-@router.post("/", response_class=Category)
+@router.post("/", response_model=Category, status_code=201)
 async def create_category(category: CategoryIn):
     data = category.model_dump()
     last_record_id = len(category_table)
@@ -17,4 +17,4 @@ async def create_category(category: CategoryIn):
 
 @router.get("/category", response_model=list[Category])
 async def get_all_category():
-    return list(category_table.values)
+    return list(category_table.values())
