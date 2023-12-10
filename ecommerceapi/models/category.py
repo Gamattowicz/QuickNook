@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class CategoryIn(BaseModel):
@@ -6,4 +6,6 @@ class CategoryIn(BaseModel):
 
 
 class Category(CategoryIn):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int

@@ -19,7 +19,7 @@ async def test_create_category(async_client: AsyncClient):
     response = await async_client.post("/category/", json={"name": name})
 
     assert response.status_code == 201
-    assert {"id": 0, "name": name}.items() <= response.json().items()
+    assert {"id": 1, "name": name}.items() <= response.json().items()
 
 
 @pytest.mark.anyio
