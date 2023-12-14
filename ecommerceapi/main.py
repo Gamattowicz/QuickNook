@@ -8,6 +8,7 @@ from fastapi.exception_handlers import http_exception_handler
 from ecommerceapi.database import database
 from ecommerceapi.logging_conf import configure_logging
 from ecommerceapi.routers.category import router as category_router
+from ecommerceapi.routers.product import router as product_router
 from ecommerceapi.routers.user import router as user_router
 
 logger = logging.getLogger(__name__)
@@ -25,6 +26,7 @@ app = FastAPI(lifespan=lifespan)
 app.add_middleware(CorrelationIdMiddleware)
 
 app.include_router(category_router, prefix="/category")
+app.include_router(product_router, prefix="/product")
 app.include_router(user_router, prefix="/user")
 
 

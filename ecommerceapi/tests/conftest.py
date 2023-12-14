@@ -6,6 +6,8 @@ import pytest
 from fastapi.testclient import TestClient
 from httpx import AsyncClient, Request, Response
 
+# from ecommerceapi.tests.routers.test_category import created_category  # noqa: F401
+
 os.environ["ENV_STATE"] = "test"
 from ecommerceapi.database import database, user_table  # noqa: E402
 from ecommerceapi.main import app  # noqa: E402
@@ -71,3 +73,19 @@ def mock_httpx_client(mocker):
     mocked_client.return_value.__aenter__.return_value = mocked_async_client
 
     return mocked_async_client
+
+
+async def create_category(
+    name: str, async_client: AsyncClient, logged_in_token: str
+) -> dict:
+    response = await async_client.post(
+        "/category/",
+        json={"name": name},
+        headers={"Authorization": f"Bearer {logged_in_token}"},
+    )
+    return response.json()
+
+
+@pytest.fixture()
+async def created_category(async_client: AsyncClient, logged_in_token: str):
+    return await create_category("Test Category", async_client, logged_in_token)

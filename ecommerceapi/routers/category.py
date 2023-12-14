@@ -1,7 +1,7 @@
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 
 from ecommerceapi.database import category_table, database
 from ecommerceapi.models.category import Category, CategoryIn
@@ -39,15 +39,11 @@ async def get_all_category():
     return await database.fetch_all(query)
 
 
-@router.get("/{category_id}", response_model=list[Category])
 async def find_category(category_id: int):
     logger.info(f"Finding category with id {category_id}")
 
     query = category_table.select().where(category_table.c.id == category_id)
 
-    result = await database.fetch_one(query)
-    if result is None:
-        raise HTTPException(status_code=404, detail="Category not found")
+    logger.debug(query)
 
-    logger.debug(f"Query: {query}")
-    return result
+    return await database.fetch_one(query)

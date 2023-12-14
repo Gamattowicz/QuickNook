@@ -3,21 +3,20 @@ from httpx import AsyncClient
 
 from ecommerceapi import security
 
+# async def create_category(
+#     name: str, async_client: AsyncClient, logged_in_token: str
+# ) -> dict:
+#     response = await async_client.post(
+#         "/category/",
+#         json={"name": name},
+#         headers={"Authorization": f"Bearer {logged_in_token}"},
+#     )
+#     return response.json()
 
-async def create_category(
-    name: str, async_client: AsyncClient, logged_in_token: str
-) -> dict:
-    response = await async_client.post(
-        "/category/",
-        json={"name": name},
-        headers={"Authorization": f"Bearer {logged_in_token}"},
-    )
-    return response.json()
 
-
-@pytest.fixture()
-async def created_category(async_client: AsyncClient, logged_in_token: str):
-    return await create_category("Test Category", async_client, logged_in_token)
+# @pytest.fixture()
+# async def created_category(async_client: AsyncClient, logged_in_token: str):
+#     return await create_category("Test Category", async_client, logged_in_token)
 
 
 @pytest.mark.anyio
