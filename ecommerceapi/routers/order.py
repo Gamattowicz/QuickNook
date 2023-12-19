@@ -25,7 +25,7 @@ async def create_order(order_in: OrderIn):
             product_ids = [product.product_id for product in order_in.products]
             # logger.debug(product_ids)
 
-            products_query = select([product_table.c.id, product_table.c.price]).where(
+            products_query = select(product_table.c.id, product_table.c.price).where(
                 product_table.c.id.in_(product_ids)
             )
             logger.debug(products_query)
@@ -33,7 +33,7 @@ async def create_order(order_in: OrderIn):
             products = await database.fetch_all(products_query)
             # logger.debug(products)
 
-            existing_product_ids = {product["id"] for product in products}
+            existing_product_ids = {product.id for product in products}
             # logger.debug(existing_product_ids)
 
             missing_products = [
@@ -78,7 +78,7 @@ async def create_order(order_in: OrderIn):
                 quantity = product.quantity
 
                 product_price_str = next(
-                    (p["price"] for p in products if p["id"] == product_id), "0.00"
+                    (p.price for p in products if p.id == product_id), "0.00"
                 )
                 product_price = Decimal(product_price_str)
                 total_price += product_price * quantity
@@ -141,36 +141,34 @@ async def get_all_orders():
         )
         # logger.debug(orders_items_join)
         query = select(
-            [
-                order_table.c.id,
-                order_table.c.delivery_address,
-                order_table.c.order_date,
-                order_table.c.payment_due_date,
-                order_table.c.total_price,
-                order_table.c.customer_id,
-                order_item_table.c.product_id,
-                order_item_table.c.quantity,
-            ]
+            order_table.c.id,
+            order_table.c.delivery_address,
+            order_table.c.order_date,
+            order_table.c.payment_due_date,
+            order_table.c.total_price,
+            order_table.c.customer_id,
+            order_item_table.c.product_id,
+            order_item_table.c.quantity,
         ).select_from(orders_items_join)
         logger.debug(query)
         results = await database.fetch_all(query)
         # logger.debug(results)
         orders_with_products = {}
         for result in results:
-            order_id = result["id"]
+            order_id = result.id
             if order_id not in orders_with_products:
                 orders_with_products[order_id] = {
                     "id": order_id,
-                    "delivery_address": result["delivery_address"],
-                    "order_date": result["order_date"],
-                    "payment_due_date": result["payment_due_date"],
-                    "total_price": str(result["total_price"]),
-                    "customer_id": result["customer_id"],
+                    "delivery_address": result.delivery_address,
+                    "order_date": result.order_date,
+                    "payment_due_date": result.payment_due_date,
+                    "total_price": str(result.total_price),
+                    "customer_id": result.customer_id,
                     "products": [],
                 }
 
             orders_with_products[order_id]["products"].append(
-                {"product_id": result["product_id"], "quantity": result["quantity"]}
+                {"product_id": result.product_id, "quantity": result.quantity}
             )
         # logger.debug(list(orders_with_products.values()))
         return list(orders_with_products.values())
