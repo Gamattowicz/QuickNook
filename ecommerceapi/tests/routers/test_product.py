@@ -1,35 +1,34 @@
 import pytest
 from httpx import AsyncClient
 
+# async def create_product(
+#     name: str,
+#     description: str,
+#     price: float,
+#     category_id: int,
+#     async_client: AsyncClient,
+# ) -> dict:
+#     response = await async_client.post(
+#         "/product/",
+#         json={
+#             "name": name,
+#             "description": description,
+#             "price": price,
+#             "category_id": category_id,
+#         },
+#     )
+#     return response.json()
 
-async def create_product(
-    name: str,
-    description: str,
-    price: float,
-    category_id: int,
-    async_client: AsyncClient,
-) -> dict:
-    response = await async_client.post(
-        "/product/",
-        json={
-            "name": name,
-            "description": description,
-            "price": price,
-            "category_id": category_id,
-        },
-    )
-    return response.json()
 
-
-@pytest.fixture()
-async def created_product(async_client: AsyncClient, created_category: dict):
-    return await create_product(
-        "Test Product",
-        "Test Description",
-        4.00,
-        created_category["id"],
-        async_client,
-    )
+# @pytest.fixture()
+# async def created_product(async_client: AsyncClient, created_category: dict):
+#     return await create_product(
+#         "Test Product",
+#         "Test Description",
+#         4.00,
+#         created_category["id"],
+#         async_client,
+#     )
 
 
 @pytest.mark.anyio
