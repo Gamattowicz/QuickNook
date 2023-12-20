@@ -6,8 +6,6 @@ import pytest
 from fastapi.testclient import TestClient
 from httpx import AsyncClient, Request, Response
 
-# from ecommerceapi.tests.routers.test_category import created_category  # noqa: F401
-
 os.environ["ENV_STATE"] = "test"
 from ecommerceapi.database import database, user_table  # noqa: E402
 from ecommerceapi.main import app  # noqa: E402

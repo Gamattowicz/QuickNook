@@ -2,15 +2,17 @@ import logging
 from datetime import datetime as dt
 from datetime import timedelta
 from decimal import Decimal
-from typing import List
+from typing import Annotated, List
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import join
 from sqlalchemy.exc import DBAPIError, IntegrityError, SQLAlchemyError
 from sqlalchemy.sql import select
 
 from ecommerceapi.database import database, order_item_table, order_table, product_table
 from ecommerceapi.models.order import Order, OrderIn
+from ecommerceapi.models.user import User
+from ecommerceapi.security import get_current_user
 
 router = APIRouter()
 
@@ -18,10 +20,13 @@ logger = logging.getLogger(__name__)
 
 
 @router.post("/", response_model=Order, status_code=201)
-async def create_order(order_in: OrderIn):
+async def create_order(
+    order_in: OrderIn, current_user: Annotated[User, Depends(get_current_user)]
+):
     try:
         async with database.transaction():
             logger.info("Creating order")
+
             product_ids = [product.product_id for product in order_in.products]
             # logger.debug(product_ids)
 
@@ -60,7 +65,7 @@ async def create_order(order_in: OrderIn):
                 "delivery_address": order_in.delivery_address,
                 "order_date": current_time,
                 "payment_due_date": payment_due_date,
-                "customer_id": 1,
+                "customer_id": current_user.id,
             }
             # logger.debug(order_values)
 
@@ -104,7 +109,7 @@ async def create_order(order_in: OrderIn):
                 "order_date": current_time,
                 "payment_due_date": payment_due_date,
                 "total_price": str(total_price),
-                "customer_id": 1,
+                "customer_id": current_user.id,
                 "products": [product.model_dump() for product in order_in.products],
                 "delivery_address": order_in.delivery_address,
             }
