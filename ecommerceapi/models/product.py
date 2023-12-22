@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel, ConfigDict
 
 
@@ -6,6 +8,7 @@ class ProductIn(BaseModel):
     description: str
     price: float
     category_id: int
+    image: Optional[str] = None
 
 
 class Product(ProductIn):

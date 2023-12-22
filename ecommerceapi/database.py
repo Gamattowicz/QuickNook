@@ -23,6 +23,7 @@ product_table = sqlalchemy.Table(
     sqlalchemy.Column(
         "category_id", sqlalchemy.ForeignKey("categories.id"), nullable=False
     ),
+    sqlalchemy.Column("image", sqlalchemy.String, nullable=True),
 )
 
 order_table = sqlalchemy.Table(

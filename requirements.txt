@@ -11,3 +11,5 @@ python-jose
 python-multipart
 passlib[bcrypt]
 httpx
+python-multipart
+aiofiles
