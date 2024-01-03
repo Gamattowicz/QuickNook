@@ -96,15 +96,13 @@ async def create_product(
     category_id: int,
     async_client: AsyncClient,
 ) -> dict:
-    response = await async_client.post(
-        "/product/",
-        json={
-            "name": name,
-            "description": description,
-            "price": price,
-            "category_id": category_id,
-        },
-    )
+    form_data = {
+        "name": (None, name),
+        "description": (None, description),
+        "price": (None, str(price)),
+        "category_id": (None, str(category_id)),
+    }
+    response = await async_client.post("/product/", files=form_data)
     return response.json()
 
 
