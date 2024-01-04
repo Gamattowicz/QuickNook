@@ -3,6 +3,7 @@ import sqlalchemy
 from sqlalchemy.sql import func
 
 from ecommerceapi.config import config
+from ecommerceapi.models.user import UserRole
 
 metadata = sqlalchemy.MetaData()
 
@@ -24,6 +25,7 @@ product_table = sqlalchemy.Table(
         "category_id", sqlalchemy.ForeignKey("categories.id"), nullable=False
     ),
     sqlalchemy.Column("image", sqlalchemy.String, nullable=True),
+    sqlalchemy.Column("thumbnail", sqlalchemy.String, nullable=True),
 )
 
 order_table = sqlalchemy.Table(
@@ -55,6 +57,7 @@ user_table = sqlalchemy.Table(
     sqlalchemy.Column("email", sqlalchemy.String, unique=True),
     sqlalchemy.Column("password", sqlalchemy.String),
     sqlalchemy.Column("confirmed", sqlalchemy.Boolean, default=False),
+    sqlalchemy.Column("role", sqlalchemy.String, default=UserRole.client.value),
 )
 
 engine = sqlalchemy.create_engine(

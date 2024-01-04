@@ -2,11 +2,13 @@ import datetime
 import logging
 import os
 import re
+from io import BytesIO
 from pathlib import Path
 from typing import Optional
 
 import aiofiles
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from PIL import Image
 from sqlalchemy.exc import SQLAlchemyError
 
 from ecommerceapi.database import database, product_table
@@ -21,8 +23,11 @@ MAX_IMAGE_SIZE = 5 * 1024 * 1024
 ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png"]
 ALLOWED_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png"}
 
+THUMBNAIL_SIZE = (128, 128)
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 IMAGE_DIR = BASE_DIR / "images"
+THUMBNAIL_DIR = BASE_DIR / "thumbnails"
 
 
 def sanitize_filename(filename: str) -> str:
@@ -41,6 +46,21 @@ async def is_file_too_large(file: UploadFile, max_size: int) -> bool:
         if total_size > max_size:
             return True
     return False
+
+
+async def create_thumbnail(image_path: Path) -> Path:
+    with Image.open(image_path) as img:
+        img.thumbnail(THUMBNAIL_SIZE)
+        thumbnail_path = THUMBNAIL_DIR / f"thumbnail_{image_path.stem}.png"
+
+        img_bytes = BytesIO()
+        img.save(img_bytes, format="PNG")
+        img_bytes = img_bytes.getvalue()
+
+        async with aiofiles.open(thumbnail_path, "wb") as out_file:
+            await out_file.write(img_bytes)
+
+        return thumbnail_path
 
 
 @router.post("/", response_model=Product, status_code=201)
@@ -99,6 +119,11 @@ async def create_product(
                     await out_file.write(chunk)
 
             data["image"] = str(file_location)
+
+            THUMBNAIL_DIR.mkdir(exist_ok=True)
+
+            thumbnail_path = await create_thumbnail(file_location)
+            data["thumbnail"] = str(thumbnail_path)
 
         query = product_table.insert().values(data)
 

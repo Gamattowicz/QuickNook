@@ -15,3 +15,4 @@ class Product(ProductIn):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    thumbnail: Optional[str] = None
