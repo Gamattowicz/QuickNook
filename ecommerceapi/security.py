@@ -33,22 +33,22 @@ def confirm_token_expire_minutes() -> int:
     return 24 * 60
 
 
-def create_access_token(email: str):
-    logger.debug("Creating access token", extra={"email": email})
+def create_access_token(email: str, role: str):
+    logger.debug("Creating access token", extra={"email": email, "role": role})
     expire = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
         minutes=access_token_expire_minutes()
     )
-    jwt_data = {"sub": email, "exp": expire, "type": "access"}
+    jwt_data = {"sub": email, "exp": expire, "type": "access", "role": role}
     encoded_jwt = jwt.encode(jwt_data, key=SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
 
-def create_confirmation_token(email: str):
-    logger.debug("Creating confirmation token", extra={"email": email})
+def create_confirmation_token(email: str, role: str):
+    logger.debug("Creating confirmation token", extra={"email": email, "role": role})
     expire = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(
         minutes=confirm_token_expire_minutes()
     )
-    jwt_data = {"sub": email, "exp": expire, "type": "confirmation"}
+    jwt_data = {"sub": email, "exp": expire, "type": "confirmation", "role": role}
     encoded_jwt = jwt.encode(jwt_data, key=SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
@@ -105,6 +105,20 @@ async def authenticate_user(email: str, password: str):
         raise create_credentials_exception("Invalid email or password")
     if not user.confirmed:
         raise create_credentials_exception("User has not confirmed email")
+    return user
+
+
+async def authenticate_user_with_role(email: str, password: str, role: str):
+    logger.debug(f"Authenticating user with role {role}", extra={"email": email})
+    user = await get_user(email)
+    if not user:
+        raise create_credentials_exception("Invalid email or password")
+    if not verify_password(password, user.password):
+        raise create_credentials_exception("Invalid email or password")
+    if not user.confirmed:
+        raise create_credentials_exception("User has not confirmed email")
+    if user.role != role:
+        raise create_credentials_exception(f"User is not a {role}")
     return user
 
 

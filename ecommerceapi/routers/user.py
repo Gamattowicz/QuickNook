@@ -27,7 +27,9 @@ async def register(user: UserIn, background_tasks: BackgroundTasks, request: Req
         )
 
     hashed_password = get_password_hash(user.password)
-    query = user_table.insert().values(email=user.email, password=hashed_password)
+    query = user_table.insert().values(
+        email=user.email, password=hashed_password, role=user.role
+    )
 
     logger.debug(query)
 
@@ -36,13 +38,13 @@ async def register(user: UserIn, background_tasks: BackgroundTasks, request: Req
         tasks.send_user_registration_email,
         user.email,
         confirmation_url=request.url_for(
-            "confirm_email", token=create_confirmation_token(user.email)
+            "confirm_email", token=create_confirmation_token(user.email, user.role)
         ),
     )
     return {
         "detail": "User created. Please confirm your email.",
         "confirmation_url": request.url_for(
-            "confirm_email", token=create_confirmation_token(user.email)
+            "confirm_email", token=create_confirmation_token(user.email, user.role)
         ),
     }
 
@@ -50,7 +52,7 @@ async def register(user: UserIn, background_tasks: BackgroundTasks, request: Req
 @router.post("/token")
 async def login(user: UserIn):
     user = await authenticate_user(user.email, user.password)
-    access_token = create_access_token(user.email)
+    access_token = create_access_token(user.email, user.role)
     return {"access_token": access_token, "token_type": "bearer"}
 
 
