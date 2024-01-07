@@ -1,9 +1,12 @@
 import contextlib
 import pathlib
 from io import BytesIO
+from unittest.mock import AsyncMock
 
 import pytest
 from httpx import AsyncClient
+
+from ecommerceapi.routers import product
 
 
 async def create_product_with_image(
@@ -68,17 +71,24 @@ def aiofiles_mock_open(mocker):
     return mock_open
 
 
+@pytest.fixture
+def mock_create_thumbnail(mocker):
+    mock = AsyncMock(return_value=product.THUMBNAIL_DIR / "thumbnail_test_image.png")
+    mocker.patch.object(product, "create_thumbnail", new=mock)
+    return mock
+
+
 @pytest.mark.anyio
 async def test_create_product_with_image(
-    async_client: AsyncClient, created_category: dict, sample_image: pathlib.Path
+    async_client: AsyncClient,
+    created_category: dict,
+    sample_image: pathlib.Path,
+    mock_create_thumbnail: AsyncMock,
 ):
     name = "Test Product"
     description = "Test Description"
     price = 4.00
     category_id = created_category["id"]
-
-    with open(sample_image, "rb") as image_file:
-        image_content = image_file.read()
 
     form_data = {
         "name": (None, name),
@@ -86,11 +96,10 @@ async def test_create_product_with_image(
         "price": (None, str(price)),
         "category_id": (None, str(category_id)),
     }
-    files = {
-        "file": (sample_image.name, image_content, "image/png"),
-    }
-    response = await async_client.post("/product/", data=form_data, files=files)
-
+    response = await async_client.post(
+        "/product/", data=form_data, files={"file": open(sample_image, "rb")}
+    )
+    print(response.json())
     assert response.status_code == 201
     assert {
         "id": 1,
@@ -100,6 +109,7 @@ async def test_create_product_with_image(
         "category_id": category_id,
     }.items() <= response.json().items()
     assert "test_image.png" in response.json()["image"]
+    assert "thumbnail_test_image.png" in response.json()["thumbnail"]
 
 
 @pytest.mark.anyio
