@@ -64,7 +64,9 @@ async def test_create_order_expired_token(
     mocker,
 ):
     mocker.patch("ecommerceapi.security.access_token_expire_minutes", return_value=-1)
-    token = security.create_access_token(confirmed_user["email"])
+    token = security.create_access_token(
+        confirmed_user["email"], confirmed_user["role"]
+    )
     delivery_address = "1232 Main St, Anytown, AN 12345"
     products = [{"product_id": created_product["id"], "quantity": 2}]
 

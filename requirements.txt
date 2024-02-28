@@ -13,3 +13,4 @@ passlib[bcrypt]
 httpx
 python-multipart
 aiofiles
+Pillow
