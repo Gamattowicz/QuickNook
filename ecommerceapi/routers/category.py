@@ -1,12 +1,14 @@
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query, Request
 
 from ecommerceapi.database import category_table, database
 from ecommerceapi.models.category import Category, CategoryIn
+from ecommerceapi.models.pagination import PaginatedResponse
 from ecommerceapi.models.user import User
 from ecommerceapi.security import get_current_user
+from ecommerceapi.utils.pagination_helpers import paginate
 
 router = APIRouter()
 
@@ -28,15 +30,17 @@ async def create_category(
     return {**data, "id": last_record_id}
 
 
-@router.get("/category", response_model=list[Category])
-async def get_all_category():
-    logger.info("Getting all categories")
+@router.get("/category", response_model=PaginatedResponse[Category])
+async def get_all_category(
+    request: Request,
+    page: int = Query(1, gt=0),
+    per_page: int = Query(10, gt=0),
+):
+    path = "category/category"
 
-    query = category_table.select()
-
-    logger.debug(query)
-
-    return await database.fetch_all(query)
+    return await paginate(
+        request, page, per_page, category_table, logger, database, path, Category
+    )
 
 
 async def find_category(category_id: int):
