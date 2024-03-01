@@ -7,12 +7,14 @@ from pathlib import Path
 from typing import Optional
 
 import aiofiles
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, File, Form, HTTPException, Query, Request, UploadFile
 from PIL import Image
 from sqlalchemy.exc import SQLAlchemyError
 
 from api.database import database, product_table
+from api.models.pagination import PaginatedResponse
 from api.models.product import Product
+from api.utils.pagination_helpers import paginate
 
 router = APIRouter()
 
@@ -145,15 +147,17 @@ async def create_product(
         raise HTTPException(status_code=500, detail="An unexpected error occurred.")
 
 
-@router.get("/product", response_model=list[Product])
-async def get_all_product():
-    logger.info("Getting all products")
+@router.get("/product", response_model=PaginatedResponse[Product])
+async def get_all_product(
+    request: Request,
+    page: int = Query(1, gt=0),
+    per_page: int = Query(10, gt=0),
+):
+    path = "product/product"
 
-    query = product_table.select()
-
-    logger.debug(query)
-
-    return await database.fetch_all(query)
+    return await paginate(
+        request, page, per_page, product_table, logger, database, path, Product
+    )
 
 
 @router.get("/{product_id}", response_model=Product)
