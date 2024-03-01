@@ -11,8 +11,8 @@ from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from PIL import Image
 from sqlalchemy.exc import SQLAlchemyError
 
-from ecommerceapi.database import database, product_table
-from ecommerceapi.models.product import Product
+from api.database import database, product_table
+from api.models.product import Product
 
 router = APIRouter()
 

@@ -9,10 +9,10 @@ from sqlalchemy import join
 from sqlalchemy.exc import DBAPIError, IntegrityError, SQLAlchemyError
 from sqlalchemy.sql import select
 
-from ecommerceapi.database import database, order_item_table, order_table, product_table
-from ecommerceapi.models.order import Order, OrderIn
-from ecommerceapi.models.user import User
-from ecommerceapi.security import get_current_user
+from api.database import database, order_item_table, order_table, product_table
+from api.models.order import Order, OrderIn
+from api.models.user import User
+from api.security import get_current_user
 
 router = APIRouter()
 

@@ -2,10 +2,10 @@ import logging
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, status
 
-from ecommerceapi import tasks
-from ecommerceapi.database import database, user_table
-from ecommerceapi.models.user import UserIn
-from ecommerceapi.security import (
+from api import tasks
+from api.database import database, user_table
+from api.models.user import UserIn
+from api.security import (
     authenticate_user,
     create_access_token,
     create_confirmation_token,

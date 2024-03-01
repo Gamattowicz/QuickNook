@@ -7,7 +7,7 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import ExpiredSignatureError, JWTError, jwt
 from passlib.context import CryptContext
 
-from ecommerceapi.database import database, user_table
+from api.database import database, user_table
 
 logger = logging.getLogger(__name__)
 

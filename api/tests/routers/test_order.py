@@ -3,7 +3,7 @@ from typing import List
 import pytest
 from httpx import AsyncClient
 
-from ecommerceapi import security
+from api import security
 
 
 async def create_order(

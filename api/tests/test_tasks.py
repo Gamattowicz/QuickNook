@@ -1,7 +1,7 @@
 import httpx
 import pytest
 
-from ecommerceapi.tasks import APIResponseError, send_simple_email
+from api.tasks import APIResponseError, send_simple_email
 
 
 @pytest.mark.anyio

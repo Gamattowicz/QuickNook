@@ -3,12 +3,12 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, Request
 
-from ecommerceapi.database import category_table, database
-from ecommerceapi.models.category import Category, CategoryIn
-from ecommerceapi.models.pagination import PaginatedResponse
-from ecommerceapi.models.user import User
-from ecommerceapi.security import get_current_user
-from ecommerceapi.utils.pagination_helpers import paginate
+from api.database import category_table, database
+from api.models.category import Category, CategoryIn
+from api.models.pagination import PaginatedResponse
+from api.models.user import User
+from api.security import get_current_user
+from api.utils.pagination_helpers import paginate
 
 router = APIRouter()
 

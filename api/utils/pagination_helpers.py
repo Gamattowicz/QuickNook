@@ -7,7 +7,7 @@ from fastapi import Request
 from pydantic import BaseModel
 from sqlalchemy import Table
 
-from ecommerceapi.models.pagination import PaginatedResponse
+from api.models.pagination import PaginatedResponse
 
 
 async def paginate(

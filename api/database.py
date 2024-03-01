@@ -2,8 +2,8 @@ import databases
 import sqlalchemy
 from sqlalchemy.sql import func
 
-from ecommerceapi.config import config
-from ecommerceapi.models.user import UserRole
+from api.config import config
+from api.models.user import UserRole
 
 metadata = sqlalchemy.MetaData()
 

@@ -5,12 +5,12 @@ from asgi_correlation_id import CorrelationIdMiddleware
 from fastapi import FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
 
-from ecommerceapi.database import database
-from ecommerceapi.logging_conf import configure_logging
-from ecommerceapi.routers.category import router as category_router
-from ecommerceapi.routers.order import router as order_router
-from ecommerceapi.routers.product import router as product_router
-from ecommerceapi.routers.user import router as user_router
+from api.database import database
+from api.logging_conf import configure_logging
+from api.routers.category import router as category_router
+from api.routers.order import router as order_router
+from api.routers.product import router as product_router
+from api.routers.user import router as user_router
 
 logger = logging.getLogger(__name__)
 

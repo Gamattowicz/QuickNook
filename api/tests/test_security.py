@@ -1,7 +1,7 @@
 import pytest
 from jose import jwt
 
-from ecommerceapi import security
+from api import security
 
 
 def test_access_token_expire_minutes():

@@ -1,7 +1,7 @@
 import pytest
 from httpx import AsyncClient
 
-from ecommerceapi import security
+from api import security
 
 # async def create_category(
 #     name: str, async_client: AsyncClient, logged_in_token: str

@@ -6,7 +6,7 @@ from unittest.mock import AsyncMock
 import pytest
 from httpx import AsyncClient
 
-from ecommerceapi.routers import product
+from api.routers import product
 
 
 async def create_product_with_image(

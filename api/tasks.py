@@ -2,7 +2,7 @@ import logging
 
 import httpx
 
-from ecommerceapi.config import config
+from api.config import config
 
 logger = logging.getLogger(__name__)
 
