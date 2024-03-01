@@ -48,7 +48,7 @@ async def test_confirm_user_invalid_token(async_client: AsyncClient):
 
 @pytest.mark.anyio
 async def test_confirm_user_expired_token(async_client: AsyncClient, mocker):
-    mocker.patch("ecommerceapi.security.confirm_token_expire_minutes", return_value=-1)
+    mocker.patch("api.security.confirm_token_expire_minutes", return_value=-1)
     spy = mocker.spy(BackgroundTasks, "add_task")
     await register_user(async_client, "test@example.com", "123456")
     confirmation_url = str(spy.call_args[1]["confirmation_url"])

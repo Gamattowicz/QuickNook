@@ -9,20 +9,19 @@ from sqlalchemy import Table
 
 from api.models.pagination import PaginatedResponse
 
+logger = logging.getLogger(__name__)
+
 
 async def paginate(
     request: Request,
     page: int,
     per_page: int,
     table: Table,
-    logger: logging.Logger,
     db: Database,
     path: str,
     Schema: Type[BaseModel],
 ) -> PaginatedResponse:
-    pass
-
-    logger.info("Getting all categories")
+    logger.info(f"Getting all {Schema.__name__}")
 
     offset = (page - 1) * per_page
     query = table.select().limit(per_page).offset(offset)
@@ -30,7 +29,7 @@ async def paginate(
     count_query = sqlalchemy.select(sqlalchemy.func.count()).select_from(table)
     total = await db.fetch_one(count_query)
     base_url = str(request.base_url)
-    print(base_url)
+
     next_page = (
         f"{base_url}{path}?page={page + 1}&per_page={per_page}"
         if offset + per_page < total[0]
@@ -39,6 +38,7 @@ async def paginate(
     prev_page = (
         f"{base_url}{path}?page={page - 1}&per_page={per_page}" if page > 1 else None
     )
+
     logger.debug(query)
     return PaginatedResponse(
         page=page,

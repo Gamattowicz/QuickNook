@@ -37,7 +37,7 @@ async def test_create_category(async_client: AsyncClient, logged_in_token: str):
 async def test_create_category_expired_token(
     async_client: AsyncClient, confirmed_user: dict, mocker
 ):
-    mocker.patch("ecommerceapi.security.access_token_expire_minutes", return_value=-1)
+    mocker.patch("api.security.access_token_expire_minutes", return_value=-1)
     token = security.create_access_token(
         confirmed_user["email"], confirmed_user["role"]
     )

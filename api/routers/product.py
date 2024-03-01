@@ -156,7 +156,7 @@ async def get_all_product(
     path = "product/product"
 
     return await paginate(
-        request, page, per_page, product_table, logger, database, path, Product
+        request, page, per_page, product_table, database, path, Product
     )
 
 

@@ -45,7 +45,7 @@ def test_get_subject_for_token_type_valid_access():
 
 
 def test_get_subject_for_token_type_expired(mocker):
-    mocker.patch("ecommerceapi.security.access_token_expire_minutes", return_value=-1)
+    mocker.patch("api.security.access_token_expire_minutes", return_value=-1)
     email = "test@example.com"
     role = "client"
     token = security.create_access_token(email, role)

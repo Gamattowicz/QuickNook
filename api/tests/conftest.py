@@ -63,7 +63,7 @@ async def logged_in_token(async_client: AsyncClient, confirmed_user: dict) -> st
 
 @pytest.fixture(autouse=True)
 def mock_httpx_client(mocker):
-    mocked_client = mocker.patch("ecommerceapi.tasks.httpx.AsyncClient")
+    mocked_client = mocker.patch("api.tasks.httpx.AsyncClient")
 
     mocked_async_client = Mock()
     response = Response(status_code=200, content="", request=Request("POST", "//"))

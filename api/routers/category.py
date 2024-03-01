@@ -39,7 +39,7 @@ async def get_all_category(
     path = "category/category"
 
     return await paginate(
-        request, page, per_page, category_table, logger, database, path, Category
+        request, page, per_page, category_table, database, path, Category
     )
 
 

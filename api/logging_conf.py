@@ -60,7 +60,7 @@ def configure_logging() -> None:
                     "class": "logging.handlers.RotatingFileHandler",
                     "level": "DEBUG",
                     "formatter": "file",
-                    "filename": "ecommerceapi.log",
+                    "filename": "api.log",
                     "maxBytes": 1024 * 1024,
                     "backupCount": 2,
                     "encoding": "utf8",
@@ -69,7 +69,7 @@ def configure_logging() -> None:
             },
             "loggers": {
                 "uvicorn": {"handlers": ["default", "rotating_file"], "level": "INFO"},
-                "ecommerceapi": {
+                "api": {
                     "handlers": ["default", "rotating_file"],
                     "level": "DEBUG" if isinstance(config, DevConfig) else "INFO",
                     "propagate": False,
