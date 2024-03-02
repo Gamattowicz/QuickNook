@@ -1,5 +1,5 @@
 import logging
-from typing import Type
+from typing import Optional, Type
 
 import sqlalchemy
 from databases import Database
@@ -20,11 +20,15 @@ async def paginate(
     db: Database,
     path: str,
     Schema: Type[BaseModel],
+    query: Optional[sqlalchemy.sql.selectable.Select] = None,
 ) -> PaginatedResponse:
     logger.info(f"Getting all {Schema.__name__}")
 
     offset = (page - 1) * per_page
-    query = table.select().limit(per_page).offset(offset)
+    if query is None:
+        query = table.select().limit(per_page).offset(offset)
+    else:
+        query = query.limit(per_page).offset(offset)
     items = await db.fetch_all(query)
     count_query = sqlalchemy.select(sqlalchemy.func.count()).select_from(table)
     total = await db.fetch_one(count_query)
@@ -46,5 +50,5 @@ async def paginate(
         totalItems=total[0],
         nextPageUrl=next_page,
         prevPageUrl=prev_page,
-        results=[Schema(**item) for item in items],
+        results=items,
     )

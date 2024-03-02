@@ -2,17 +2,19 @@ import logging
 from datetime import datetime as dt
 from datetime import timedelta
 from decimal import Decimal
-from typing import Annotated, List
+from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy import join
 from sqlalchemy.exc import DBAPIError, IntegrityError, SQLAlchemyError
 from sqlalchemy.sql import select
 
 from api.database import database, order_item_table, order_table, product_table
-from api.models.order import Order, OrderIn
+from api.models.order import Order, OrderIn, Orders
+from api.models.pagination import PaginatedResponse
 from api.models.user import User
 from api.security import get_current_user
+from api.utils.pagination_helpers import paginate
 
 router = APIRouter()
 
@@ -134,11 +136,13 @@ async def create_order(
         raise HTTPException(status_code=500, detail="An unexpected error occurred")
 
 
-@router.get("/orders", response_model=List[Order])
-async def get_all_orders():
+@router.get("/orders", response_model=PaginatedResponse[Order])
+async def get_all_orders(
+    request: Request,
+    page: int = Query(1, gt=0),
+    per_page: int = Query(10, gt=0),
+):
     try:
-        logger.info("Getting all orders")
-
         orders_items_join = join(
             order_table,
             order_item_table,
@@ -155,11 +159,23 @@ async def get_all_orders():
             order_item_table.c.product_id,
             order_item_table.c.quantity,
         ).select_from(orders_items_join)
-        logger.debug(query)
-        results = await database.fetch_all(query)
-        # logger.debug(results)
+        # logger.debug(query)
+
+        path = "order/orders"
+
+        paginated_results = await paginate(
+            request,
+            page,
+            per_page,
+            orders_items_join,
+            database,
+            path,
+            Orders,
+            query,
+        )
+
         orders_with_products = {}
-        for result in results:
+        for result in paginated_results.results:
             order_id = result.id
             if order_id not in orders_with_products:
                 orders_with_products[order_id] = {
@@ -176,7 +192,14 @@ async def get_all_orders():
                 {"product_id": result.product_id, "quantity": result.quantity}
             )
         # logger.debug(list(orders_with_products.values()))
-        return list(orders_with_products.values())
+        return PaginatedResponse(
+            page=paginated_results.page,
+            per_page=paginated_results.per_page,
+            totalItems=paginated_results.totalItems,
+            nextPageUrl=paginated_results.nextPageUrl,
+            prevPageUrl=paginated_results.prevPageUrl,
+            results=list(orders_with_products.values()),
+        )
 
     except SQLAlchemyError as e:
         logger.error(f"Database error: {e}")

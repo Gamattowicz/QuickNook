@@ -22,6 +22,10 @@ class Order(OrderIn):
     customer_id: int
 
 
+class Orders(BaseModel):
+    orders: List[Order]
+
+
 class OrderItemIn(BaseModel):
     order_id: int
     product_id: int
