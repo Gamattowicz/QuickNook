@@ -89,6 +89,17 @@ async def created_category(async_client: AsyncClient, logged_in_token: str):
     return await create_category("Test Category", async_client, logged_in_token)
 
 
+@pytest.fixture()
+async def created_multiple_category(async_client: AsyncClient, logged_in_token: str):
+    categories = []
+    for i in range(6):
+        category = await create_category(
+            f"Test Category {i}", async_client, logged_in_token
+        )
+        categories.append(category)
+    return categories
+
+
 async def create_product(
     name: str,
     description: str,
@@ -115,3 +126,20 @@ async def created_product(async_client: AsyncClient, created_category: dict):
         created_category["id"],
         async_client,
     )
+
+
+@pytest.fixture()
+async def created_multiple_product(
+    async_client: AsyncClient, created_multiple_category: list
+):
+    products = []
+    for i in range(6):
+        product = await create_product(
+            f"Test Product {i}",
+            f"Test Description {i}",
+            4.00,
+            created_multiple_category[i]["id"],
+            async_client,
+        )
+        products.append(product)
+    return products

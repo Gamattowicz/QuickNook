@@ -2,6 +2,7 @@ import contextlib
 import pathlib
 from io import BytesIO
 from unittest.mock import AsyncMock
+from urllib.parse import urljoin
 
 import pytest
 from httpx import AsyncClient
@@ -149,4 +150,94 @@ async def test_get_all_products(async_client: AsyncClient, created_product: dict
     response = await async_client.get("/product/product")
 
     assert response.status_code == 200
-    assert response.json() == [created_product]
+    assert response.json()["results"] == [created_product]
+
+
+@pytest.mark.anyio
+async def test_get_all_products_with_pagination_first_page(
+    async_client: AsyncClient, created_multiple_product: list
+):
+    page = 1
+    per_page = 2
+    total_product = 6
+    response = await async_client.get(
+        f"/product/product?page={page}&per_page={per_page}"
+    )
+
+    assert response.status_code == 200
+    assert response.json()["page"] == page
+    assert response.json()["per_page"] == per_page
+    assert response.json()["totalItems"] == total_product
+    assert response.json()["prevPageUrl"] is None
+    assert (
+        response.json()["results"]
+        == created_multiple_product[(page - 1) * per_page : page * per_page]
+    )
+
+    # Get the base URL
+    base_url = urljoin(str(response.url), "/")
+    assert (
+        response.json()["nextPageUrl"]
+        == f"{base_url}product/product?page={page + 1}&per_page={per_page}"
+    )
+
+
+@pytest.mark.anyio
+async def test_get_all_products_with_pagination_second_page(
+    async_client: AsyncClient, created_multiple_product: list
+):
+    page = 2
+    per_page = 2
+    total_product = 6
+    response = await async_client.get(
+        f"/product/product?page={page}&per_page={per_page}"
+    )
+
+    assert response.status_code == 200
+    assert response.json()["page"] == page
+    assert response.json()["per_page"] == per_page
+    assert response.json()["totalItems"] == total_product
+    assert (
+        response.json()["results"]
+        == created_multiple_product[(page - 1) * per_page : page * per_page]
+    )
+
+    # Get the base URL
+    base_url = urljoin(str(response.url), "/")
+    assert (
+        response.json()["prevPageUrl"]
+        == f"{base_url}product/product?page={page - 1}&per_page={per_page}"
+    )
+    assert (
+        response.json()["nextPageUrl"]
+        == f"{base_url}product/product?page={page + 1}&per_page={per_page}"
+    )
+
+
+@pytest.mark.anyio
+async def test_get_all_products_with_pagination_last_page(
+    async_client: AsyncClient, created_multiple_product: list
+):
+    page = 3
+    per_page = 2
+    total_product = 6
+    response = await async_client.get(
+        f"/product/product?page={page}&per_page={per_page}"
+    )
+
+    assert response.status_code == 200
+    assert response.json()["page"] == page
+    assert response.json()["per_page"] == per_page
+    assert response.json()["totalItems"] == total_product
+    assert response.json()["nextPageUrl"] is None
+    assert (
+        response.json()["results"]
+        == created_multiple_product[(page - 1) * per_page : page * per_page]
+    )
+
+    # Get the base URL
+    base_url = urljoin(str(response.url), "/")
+    assert (
+        response.json()["prevPageUrl"]
+        == f"{base_url}product/product?page={page - 1}&per_page={per_page}"
+    )
