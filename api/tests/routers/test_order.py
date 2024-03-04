@@ -1,4 +1,5 @@
 from typing import List
+from urllib.parse import urljoin
 
 import pytest
 from httpx import AsyncClient
@@ -30,6 +31,22 @@ async def created_order(
         async_client,
         logged_in_token,
     )
+
+
+@pytest.fixture()
+async def created_multiple_order(
+    async_client: AsyncClient, created_multiple_product: list, logged_in_token: str
+):
+    orders = []
+    for i in range(6):
+        order = await create_order(
+            f"1232 Main St, Anytown, AN 1234{i}",
+            [{"product_id": created_multiple_product[i]["id"], "quantity": 2}],
+            async_client,
+            logged_in_token,
+        )
+        orders.append(order)
+    return orders
 
 
 @pytest.mark.anyio
@@ -96,4 +113,88 @@ async def test_get_all_orders(async_client: AsyncClient, created_order: dict):
     response = await async_client.get("/order/orders")
 
     assert response.status_code == 200
-    assert response.json() == [created_order]
+    assert response.json()["results"] == [created_order]
+
+
+@pytest.mark.anyio
+async def test_get_all_orders_with_pagination_first_page(
+    async_client: AsyncClient, created_multiple_order: list
+):
+    page = 1
+    per_page = 2
+    total_order = 6
+    response = await async_client.get(f"/order/orders?page={page}&per_page={per_page}")
+
+    assert response.status_code == 200
+    assert response.json()["page"] == page
+    assert response.json()["per_page"] == per_page
+    assert response.json()["totalItems"] == total_order
+    assert response.json()["prevPageUrl"] is None
+    assert (
+        response.json()["results"]
+        == created_multiple_order[(page - 1) * per_page : page * per_page]
+    )
+
+    # Get the base URL
+    base_url = urljoin(str(response.url), "/")
+    assert (
+        response.json()["nextPageUrl"]
+        == f"{base_url}order/orders?page={page + 1}&per_page={per_page}"
+    )
+
+
+@pytest.mark.anyio
+async def test_get_all_orders_with_pagination_second_page(
+    async_client: AsyncClient, created_multiple_order: list
+):
+    page = 2
+    per_page = 2
+    total_order = 6
+    response = await async_client.get(f"/order/orders?page={page}&per_page={per_page}")
+
+    assert response.status_code == 200
+    assert response.json()["page"] == page
+    assert response.json()["per_page"] == per_page
+    assert response.json()["totalItems"] == total_order
+    assert (
+        response.json()["results"]
+        == created_multiple_order[(page - 1) * per_page : page * per_page]
+    )
+
+    # Get the base URL
+    base_url = urljoin(str(response.url), "/")
+    assert (
+        response.json()["prevPageUrl"]
+        == f"{base_url}order/orders?page={page - 1}&per_page={per_page}"
+    )
+    assert (
+        response.json()["nextPageUrl"]
+        == f"{base_url}order/orders?page={page + 1}&per_page={per_page}"
+    )
+
+
+@pytest.mark.anyio
+async def test_get_all_orders_with_pagination_last_page(
+    async_client: AsyncClient, created_multiple_order: list
+):
+    page = 3
+    per_page = 2
+    total_order = 6
+    response = await async_client.get(f"/order/orders?page={page}&per_page={per_page}")
+
+    assert response.status_code == 200
+    assert response.json()["page"] == page
+    assert response.json()["per_page"] == per_page
+    assert response.json()["totalItems"] == total_order
+    assert response.json()["nextPageUrl"] is None
+    assert (
+        response.json()["results"]
+        == created_multiple_order[(page - 1) * per_page : page * per_page]
+    )
+
+    # Get the base URL
+    base_url = urljoin(str(response.url), "/")
+    assert (
+        response.json()["prevPageUrl"]
+        == f"{base_url}order/orders?page={page - 1}&per_page={per_page}"
+    )
