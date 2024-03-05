@@ -1,10 +1,8 @@
 import logging
-from typing import Optional, Type
 
 import sqlalchemy
 from databases import Database
 from fastapi import Request
-from pydantic import BaseModel
 from sqlalchemy import Table
 
 from api.models.pagination import PaginatedResponse
@@ -19,18 +17,16 @@ async def paginate(
     table: Table,
     db: Database,
     path: str,
-    Schema: Type[BaseModel],
-    query: Optional[sqlalchemy.sql.selectable.Select] = None,
+    query: sqlalchemy.sql.selectable.Select,
 ) -> PaginatedResponse:
-    logger.info(f"Getting all {Schema.__name__}")
+    logger.info(f"Getting all {table.name} with pagination")
 
     offset = (page - 1) * per_page
-    if query is None:
-        query = table.select().limit(per_page).offset(offset)
-    else:
-        query = query.limit(per_page).offset(offset)
+    query = query.limit(per_page).offset(offset)
     items = await db.fetch_all(query)
-    count_query = sqlalchemy.select(sqlalchemy.func.count()).select_from(table)
+    count_query = sqlalchemy.select([sqlalchemy.func.count()]).select_from(
+        query.alias()
+    )
     total = await db.fetch_one(count_query)
     base_url = str(request.base_url)
 

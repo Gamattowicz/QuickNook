@@ -5,9 +5,11 @@ from fastapi import APIRouter, Depends, Query, Request
 
 from api.database import category_table, database
 from api.models.category import Category, CategoryIn
+from api.models.filtering import CategoryFilter
 from api.models.pagination import PaginatedResponse
 from api.models.user import User
 from api.security import get_current_user
+from api.utils.filtering_helpers import apply_filters
 from api.utils.pagination_helpers import paginate
 
 router = APIRouter()
@@ -35,11 +37,14 @@ async def get_all_category(
     request: Request,
     page: int = Query(1, gt=0),
     per_page: int = Query(10, gt=0),
+    filters: CategoryFilter = Depends(),
 ):
     path = "category/category"
+    filters_dict = {k: v for k, v in filters.dict().items() if v is not None}
+    query_with_filters = apply_filters(filters_dict, category_table)
 
     return await paginate(
-        request, page, per_page, category_table, database, path, Category
+        request, page, per_page, category_table, database, path, query_with_filters
     )
 
 
