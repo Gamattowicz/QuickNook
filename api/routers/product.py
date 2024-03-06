@@ -7,13 +7,24 @@ from pathlib import Path
 from typing import Optional
 
 import aiofiles
-from fastapi import APIRouter, File, Form, HTTPException, Query, Request, UploadFile
+from fastapi import (
+    APIRouter,
+    Depends,
+    File,
+    Form,
+    HTTPException,
+    Query,
+    Request,
+    UploadFile,
+)
 from PIL import Image
 from sqlalchemy.exc import SQLAlchemyError
 
 from api.database import database, product_table
+from api.models.filtering_v2 import ProductFilter
 from api.models.pagination import PaginatedResponse
 from api.models.product import Product
+from api.utils.filtering_helpers import apply_filters
 from api.utils.pagination_helpers import paginate
 
 router = APIRouter()
@@ -152,11 +163,21 @@ async def get_all_product(
     request: Request,
     page: int = Query(1, gt=0),
     per_page: int = Query(10, gt=0),
+    filters: ProductFilter = Depends(),
 ):
     path = "product/product"
+    filters_dict = {k: v for k, v in filters if v is not None}
+    query_with_filters, filters_kv_pairs = apply_filters(filters_dict, product_table)
 
     return await paginate(
-        request, page, per_page, product_table, database, path, Product
+        request,
+        page,
+        per_page,
+        product_table,
+        database,
+        path,
+        query_with_filters,
+        filters_kv_pairs,
     )
 
 

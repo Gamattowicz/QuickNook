@@ -41,10 +41,17 @@ async def get_all_category(
 ):
     path = "category/category"
     filters_dict = {k: v for k, v in filters.dict().items() if v is not None}
-    query_with_filters = apply_filters(filters_dict, category_table)
+    query_with_filters, filters_kv_pairs = apply_filters(filters_dict, category_table)
 
     return await paginate(
-        request, page, per_page, category_table, database, path, query_with_filters
+        request,
+        page,
+        per_page,
+        category_table,
+        database,
+        path,
+        query_with_filters,
+        filters_kv_pairs,
     )
 
 
