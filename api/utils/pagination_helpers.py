@@ -1,5 +1,5 @@
 import logging
-from typing import Any
+from typing import Any, Optional
 
 import sqlalchemy
 from databases import Database
@@ -19,16 +19,27 @@ async def paginate(
     db: Database,
     path: str,
     query: sqlalchemy.sql.selectable.Select,
-    filters: dict[str, Any],
+    filters: Optional[dict[str, Any]] = {},
+    total: Optional[tuple] = None,
 ) -> PaginatedResponse:
-    logger.info(f"Getting all {table.name} with pagination")
-
     offset = (page - 1) * per_page
-    filtered_paginated_query = query.limit(per_page).offset(offset)
-    items = await db.fetch_all(filtered_paginated_query)
-    count_query = sqlalchemy.select(sqlalchemy.func.count()).select_from(query.alias())
+    if isinstance(table, sqlalchemy.sql.selectable.Join):
+        logger.info(
+            f"Getting all {table.left.name} and {table.right.name} with pagination"
+        )
+        filtered_paginated_query = query
+    else:
+        logger.info(f"Getting all {table.name} with pagination")
+        filtered_paginated_query = query.limit(per_page).offset(offset)
 
-    total = await db.fetch_one(count_query)
+    items = await db.fetch_all(filtered_paginated_query)
+
+    if total is None:
+        count_query = sqlalchemy.select(sqlalchemy.func.count()).select_from(
+            query.alias()
+        )
+        total = await db.fetch_one(count_query)
+
     base_url = str(request.base_url)
 
     filter_params = "&".join(
