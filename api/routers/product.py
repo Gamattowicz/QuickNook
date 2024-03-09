@@ -21,7 +21,7 @@ from PIL import Image
 from sqlalchemy.exc import SQLAlchemyError
 
 from api.database import database, product_table
-from api.models.filtering_v2 import ProductFilter
+from api.models.filtering import ProductFilter
 from api.models.pagination import PaginatedResponse
 from api.models.product import Product
 from api.utils.filtering_helpers import apply_filters
