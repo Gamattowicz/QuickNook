@@ -1,0 +1,15 @@
+@font-face {
+    font-family: 'Morena-Bold';
+    src: url('/fonts/Morena-Bold.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Anders';
+    src: url('/fonts/Anders.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
