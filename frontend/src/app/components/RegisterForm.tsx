@@ -21,6 +21,7 @@ import {
   Select,
 } from "@/components/ui/select";
 import { EnvelopeClosedIcon } from "@radix-ui/react-icons";
+import { PasswordInput } from "@/components/ui/password-input";
 
 const formSchema = z
   .object({
@@ -122,7 +123,7 @@ export function RegisterForm() {
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <Input placeholder="Password" type="password" {...field} />
+                  <PasswordInput placeholder="Password" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -135,11 +136,7 @@ export function RegisterForm() {
               <FormItem>
                 <FormLabel>Password confirm</FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder="Password confirm"
-                    type="password"
-                    {...field}
-                  />
+                  <PasswordInput placeholder="Password confirm" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
