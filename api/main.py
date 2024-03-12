@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from asgi_correlation_id import CorrelationIdMiddleware
 from fastapi import FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
+from fastapi.middleware.cors import CORSMiddleware
 
 from api.database import database
 from api.logging_conf import configure_logging
@@ -14,6 +15,9 @@ from api.routers.user import router as user_router
 
 logger = logging.getLogger(__name__)
 
+origins = [
+    "http://localhost:3000",  # React app
+]
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -28,6 +32,14 @@ app = FastAPI(
 )
 
 app.add_middleware(CorrelationIdMiddleware)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(category_router, prefix="/category")
 app.include_router(product_router, prefix="/product")
