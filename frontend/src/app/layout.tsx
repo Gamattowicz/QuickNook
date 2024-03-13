@@ -2,7 +2,6 @@ import "./globals.css";
 import { Roboto_Slab, Lato } from "next/font/google";
 import Footer from "./components/Footer";
 import Header from "./components/Header";
-import { ThemeProvider } from "./components/theme-provider";
 import { cn } from "@/lib/utils";
 
 const roboto_slab = Roboto_Slab({
@@ -26,16 +25,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={cn(roboto_slab.variable, lato.variable, "dark")}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem
-          disableTransitionOnChange
-        >
-          <Header />
-          <main>{children}</main>
-          <Footer />
-        </ThemeProvider>
+        <Header />
+        <main>{children}</main>
+        <Footer />
       </body>
     </html>
   );

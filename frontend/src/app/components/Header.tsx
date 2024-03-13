@@ -3,9 +3,8 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Logo from "./Logo";
-import { ModeToggle } from "./ModeToggle";
 import { LinkedInLogoIcon, GitHubLogoIcon } from "@radix-ui/react-icons";
-
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 import "../fonts.css";
 
 export default function Header() {
@@ -79,7 +78,7 @@ export default function Header() {
           >
             <GitHubLogoIcon className="sh-[1rem] w-[1rem] sm:h-[1.2rem] sm:w-[1.2rem]" />
           </Link>
-          <ModeToggle />
+          <ThemeToggle />
         </div>
       </div>
     </header>
