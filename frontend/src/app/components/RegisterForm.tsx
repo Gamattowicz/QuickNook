@@ -25,10 +25,7 @@ import { PasswordInput } from "@/components/ui/password-input";
 
 const formSchema = z
   .object({
-    username: z.string().min(2, {
-      message: "Username must be at least 2 characters.",
-    }),
-    emailAddress: z.string().email(),
+    email: z.string().email(),
     password: z.string().min(3),
     passwordConfirm: z.string(),
     accountType: z.enum(["client", "seller"]),
@@ -47,16 +44,37 @@ export function RegisterForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: "",
-      emailAddress: "",
+      email: "",
       password: "",
       passwordConfirm: "",
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-  }
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    try {
+      const formData = new FormData();
+      for (const key in values) {
+        formData.append(key, values[key as keyof typeof values]);
+      }
+
+      const res = await fetch("http://127.0.0.1:8000/user/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(values),
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error("Server response:", errorData);
+        throw new Error(errorData.detail);
+      }
+      const data = await res.json();
+      console.log(data);
+    } catch (error: any) {
+      console.error("Error fetching products:", error.message);
+    }
+  };
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-8">
       <Form {...form}>
@@ -66,20 +84,7 @@ export function RegisterForm() {
         >
           <FormField
             control={form.control}
-            name="username"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Username</FormLabel>
-                <FormControl>
-                  <Input placeholder="Username" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="emailAddress"
+            name="email"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Email address</FormLabel>
