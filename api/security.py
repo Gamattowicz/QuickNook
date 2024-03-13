@@ -5,8 +5,7 @@ from typing import Annotated, Literal
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import ExpiredSignatureError, JWTError, jwt
-from passlib.context import CryptContext
-
+import bcrypt
 from api.database import database, user_table
 
 logger = logging.getLogger(__name__)
@@ -14,7 +13,6 @@ logger = logging.getLogger(__name__)
 SECRET_KEY = "FsCyRyw001vCurt7d5qzQxZrxux3qXYU"
 ALGORITHM = "HS256"
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/user/token")
-pwd_context = CryptContext(schemes=["bcrypt"])
 
 
 def create_credentials_exception(detail: str) -> HTTPException:
@@ -77,12 +75,15 @@ def get_subject_for_token_type(
 
 
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    pwd_bytes = password.encode('utf-8')
+    salt = bcrypt.gensalt()
+    hashed_password = bcrypt.hashpw(password=pwd_bytes, salt=salt)
+    return hashed_password
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
-
+    password_byte_enc = plain_password.encode('utf-8')
+    return bcrypt.checkpw(password = password_byte_enc , hashed_password = hashed_password)
 
 async def get_user(email: str):
     logger.debug("Fetching user from the database", extra={"email": email})
