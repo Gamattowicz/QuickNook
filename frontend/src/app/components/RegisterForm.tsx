@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -30,7 +30,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Link from "next/link";
-
+import Message from "./Message";
 const formSchema = z
   .object({
     email: z.string().email(),
@@ -49,6 +49,8 @@ const formSchema = z
   );
 
 export function RegisterForm() {
+  const [error, setError] = useState(null);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -80,11 +82,15 @@ export function RegisterForm() {
       const data = await res.json();
       console.log(data);
     } catch (error: any) {
+      setError(error.message);
       console.error("Error fetching products:", error.message);
     }
   };
   return (
     <>
+      {error && (
+        <Message variant="destructive" title="Error" description={error} />
+      )}
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
           <CardTitle>Sign Up</CardTitle>
