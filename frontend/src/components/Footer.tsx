@@ -8,7 +8,7 @@ import {
 
 export default function Footer() {
   return (
-    <footer className="w-full footer items-center p-6 bg-secondary text-neutral-content mt-4 bottom-0 flex justify-between">
+    <footer className="w-full footer items-center p-5 mt-auto flex justify-between border-t-2 border-accent">
       <aside className="items-center grid-flow-col">
         <p>© 2024 Copyright | Designed by Przemysław Romańczuk</p>
       </aside>

@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import Logo from "./Logo";
+import Logo from "@/components/Logo";
 import { LinkedInLogoIcon, GitHubLogoIcon } from "@radix-ui/react-icons";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import "../fonts.css";
+import "../app/fonts.css";
 
 export default function Header() {
   const [isScrolling, setIsScrolling] = useState(false);

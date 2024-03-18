@@ -1,6 +1,5 @@
 import React from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-
 import { CircleAlert, CircleCheck, CircleHelp } from "lucide-react";
 
 interface MessageProps {

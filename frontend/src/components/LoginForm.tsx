@@ -24,7 +24,7 @@ import {
 import Link from "next/link";
 
 import { PasswordInput } from "@/components/ui/password-input";
-import Message from "./Message";
+import Message from "@/components/Message";
 
 const formSchema = z.object({
   email: z.string().email(),

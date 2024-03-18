@@ -30,7 +30,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import Link from "next/link";
-import Message from "./Message";
+import Message from "@/components/Message";
+
 const formSchema = z
   .object({
     email: z.string().email(),
