@@ -20,13 +20,13 @@ from fastapi import (
 from PIL import Image
 from sqlalchemy.exc import SQLAlchemyError
 
-from api.database import database, product_table
+from api.database import database, product_table, category_table
 from api.models.filtering import ProductFilter
 from api.models.pagination import PaginatedResponse
-from api.models.product import Product
+from api.models.product import Product, ProductWithCategoryName
 from api.utils.filtering_helpers import apply_filters
 from api.utils.pagination_helpers import paginate
-
+from sqlalchemy.sql import select
 router = APIRouter()
 
 logger = logging.getLogger(__name__)
@@ -158,7 +158,7 @@ async def create_product(
         raise HTTPException(status_code=500, detail="An unexpected error occurred.")
 
 
-@router.get("/product", response_model=PaginatedResponse[Product])
+@router.get("/product", response_model=PaginatedResponse[ProductWithCategoryName])
 async def get_all_product(
     request: Request,
     page: int = Query(1, gt=0),
@@ -166,8 +166,18 @@ async def get_all_product(
     filters: ProductFilter = Depends(),
 ):
     path = "product/product"
+    product_with_category_query = select(
+        product_table.c.name,
+        product_table.c.description,
+        product_table.c.price,
+        category_table.c.name.label('category_name'),
+        product_table.c.image,
+        product_table.c.id,
+        product_table.c.thumbnail
+    ).join(category_table, product_table.c.category_id == category_table.c.id)
+
     filters_dict = {k: v for k, v in filters if v is not None}
-    query_with_filters, filters_kv_pairs = apply_filters(filters_dict, product_table)
+    query_with_filters, filters_kv_pairs = apply_filters(filters_dict, product_with_category_query)
 
     return await paginate(
         request,
@@ -181,15 +191,20 @@ async def get_all_product(
     )
 
 
-@router.get("/{product_id}", response_model=Product)
+@router.get("/{product_id}", response_model=ProductWithCategoryName)
 async def find_product(product_id: int):
     logger.info(f"Finding product with id {product_id}")
 
-    query = product_table.select().where(product_table.c.id == product_id)
+    query = select([
+        product_table.c.name,
+        product_table.c.description,
+        product_table.c.price,
+        category_table.c.name.label('category_name'),
+        product_table.c.image,
+        product_table.c.id,
+        product_table.c.thumbnail
+    ]).select_from(
+        product_table.join(category_table, product_table.c.category_id == category_table.c.id)
+    ).where(product_table.c.id == product_id)
 
-    result = await database.fetch_one(query)
-    if result is None:
-        raise HTTPException(status_code=404, detail="Product not found")
-
-    logger.debug(query)
-    return result
+    return await database.fetch_one(query)
