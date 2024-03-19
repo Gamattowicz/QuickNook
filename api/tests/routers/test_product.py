@@ -146,16 +146,18 @@ async def test_create_product_missing_data(async_client: AsyncClient):
 
 
 @pytest.mark.anyio
-async def test_get_all_products(async_client: AsyncClient, created_product: dict):
+async def test_get_all_products(async_client: AsyncClient, created_product: dict, created_category: dict):
     response = await async_client.get("/product/product")
 
+    created_product["category_name"] = created_category["name"]
+    del created_product["category_id"]
     assert response.status_code == 200
     assert response.json()["results"] == [created_product]
 
 
 @pytest.mark.anyio
 async def test_get_all_products_with_pagination_first_page(
-    async_client: AsyncClient, created_multiple_product: list
+    async_client: AsyncClient, created_multiple_product: list, created_multiple_category: list
 ):
     page = 1
     per_page = 2
@@ -164,6 +166,12 @@ async def test_get_all_products_with_pagination_first_page(
         f"/product/product?page={page}&per_page={per_page}"
     )
 
+    fetched_products = created_multiple_product[(page - 1) * per_page : page * per_page]
+
+    for i in range(len(fetched_products)):
+        fetched_products[i]["category_name"] = created_multiple_category[i]["name"]
+        del fetched_products[i]["category_id"]
+
     assert response.status_code == 200
     assert response.json()["page"] == page
     assert response.json()["per_page"] == per_page
@@ -171,7 +179,7 @@ async def test_get_all_products_with_pagination_first_page(
     assert response.json()["prevPageUrl"] is None
     assert (
         response.json()["results"]
-        == created_multiple_product[(page - 1) * per_page : page * per_page]
+        == fetched_products
     )
 
     # Get the base URL
@@ -184,7 +192,7 @@ async def test_get_all_products_with_pagination_first_page(
 
 @pytest.mark.anyio
 async def test_get_all_products_with_pagination_second_page(
-    async_client: AsyncClient, created_multiple_product: list
+    async_client: AsyncClient, created_multiple_product: list, created_multiple_category: list
 ):
     page = 2
     per_page = 2
@@ -193,13 +201,19 @@ async def test_get_all_products_with_pagination_second_page(
         f"/product/product?page={page}&per_page={per_page}"
     )
 
+    start_index = (page - 1) * per_page
+    fetched_products = created_multiple_product[start_index : page * per_page]
+    for i in range(len(fetched_products)):
+        fetched_products[i]["category_name"] = created_multiple_category[start_index + i]["name"]
+        del fetched_products[i]["category_id"]
+
     assert response.status_code == 200
     assert response.json()["page"] == page
     assert response.json()["per_page"] == per_page
     assert response.json()["totalItems"] == total_product
     assert (
         response.json()["results"]
-        == created_multiple_product[(page - 1) * per_page : page * per_page]
+        == fetched_products
     )
 
     # Get the base URL
@@ -216,7 +230,7 @@ async def test_get_all_products_with_pagination_second_page(
 
 @pytest.mark.anyio
 async def test_get_all_products_with_pagination_last_page(
-    async_client: AsyncClient, created_multiple_product: list
+    async_client: AsyncClient, created_multiple_product: list, created_multiple_category: list
 ):
     page = 3
     per_page = 2
@@ -225,6 +239,12 @@ async def test_get_all_products_with_pagination_last_page(
         f"/product/product?page={page}&per_page={per_page}"
     )
 
+    start_index = (page - 1) * per_page
+    fetched_products = created_multiple_product[start_index : page * per_page]
+    for i in range(len(fetched_products)):
+        fetched_products[i]["category_name"] = created_multiple_category[start_index + i]["name"]
+        del fetched_products[i]["category_id"]
+
     assert response.status_code == 200
     assert response.json()["page"] == page
     assert response.json()["per_page"] == per_page
@@ -232,7 +252,7 @@ async def test_get_all_products_with_pagination_last_page(
     assert response.json()["nextPageUrl"] is None
     assert (
         response.json()["results"]
-        == created_multiple_product[(page - 1) * per_page : page * per_page]
+        == fetched_products
     )
 
     # Get the base URL

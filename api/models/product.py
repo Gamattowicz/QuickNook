@@ -16,3 +16,13 @@ class Product(ProductIn):
 
     id: int
     thumbnail: Optional[str] = None
+
+
+class ProductWithCategoryName(BaseModel):
+    name: str
+    description: str
+    price: float
+    category_name: str
+    image: Optional[str] = None
+    id: int
+    thumbnail: Optional[str] = None
