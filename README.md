@@ -113,7 +113,7 @@ Go to `http://127.0.0.1:8000/docs`
 
 ## Status
 
-Basic structure of the project completed.
+The application is under development.
 
 ## Contact
 
