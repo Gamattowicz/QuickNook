@@ -62,6 +62,8 @@ export function LoginForm() {
         throw new Error(errorData.detail);
       }
       const data = await res.json();
+      const token = data.access_token;
+      localStorage.setItem("jwt", token);
       console.log(data);
     } catch (error: any) {
       setError(error.message);
