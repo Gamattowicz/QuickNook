@@ -9,6 +9,7 @@ interface MessageProps {
     | "destructive"
     | "accent"
     | "muted"
+    | "success"
     | "secondary";
   title: string;
   description: string;
@@ -17,7 +18,7 @@ export default function Message({ variant, title, description }: MessageProps) {
   const Icon =
     variant === "destructive"
       ? CircleAlert
-      : variant === "muted"
+      : variant === "success"
       ? CircleCheck
       : CircleHelp;
 

@@ -19,6 +19,8 @@ const alertVariants = cva(
           "bg-accent text-accent-foreground border-accent-foreground/50 dark:border-accent-foreground [&>svg]:text-accent-foreground",
         muted:
           "bg-muted text-muted-foreground border-muted-foreground/50 dark:border-muted-foreground [&>svg]:text-muted-foreground",
+        success:
+          "bg-success text-success-foreground border-success-foreground/50 dark:border-success-foreground [&>svg]:text-success-foreground",
       },
     },
     defaultVariants: {
