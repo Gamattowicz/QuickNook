@@ -51,6 +51,7 @@ const formSchema = z
 
 export function RegisterForm() {
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState("");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -84,6 +85,7 @@ export function RegisterForm() {
       const token = data.access_token;
       localStorage.setItem("jwt", token);
       console.log(data);
+      setSuccess("Registration successful!");
     } catch (error: any) {
       setError(error.message);
       console.error("Error fetching products:", error.message);
@@ -93,6 +95,9 @@ export function RegisterForm() {
     <>
       {error && (
         <Message variant="destructive" title="Error" description={error} />
+      )}
+      {success && (
+        <Message variant="success" title="Success" description={success} />
       )}
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">

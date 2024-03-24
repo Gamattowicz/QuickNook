@@ -17,43 +17,42 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import Link from "next/link";
-
-import { PasswordInput } from "@/components/ui/password-input";
 import Message from "@/components/Message";
 
 const formSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(3),
+  name: z.string(),
 });
 
-export function LoginForm() {
+export default function ProductForm() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState("");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const formData = new FormData();
-      for (const key in values) {
-        formData.append(key, values[key as keyof typeof values]);
+      const token = localStorage.getItem("jwt");
+      if (!token) {
+        throw new Error(
+          "You are not authenticated. Please log in and try again."
+        );
       }
 
-      const res = await fetch("http://127.0.0.1:8000/user/token", {
+      const formData = new FormData();
+      for (const key in values) {
+        formData.append(key, String(values[key as keyof typeof values]));
+      }
+
+      const res = await fetch("http://127.0.0.1:8000/category/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(values),
       });
@@ -63,17 +62,15 @@ export function LoginForm() {
         throw new Error(errorData.detail);
       }
       const data = await res.json();
-      const token = data.access_token;
-      localStorage.setItem("jwt", token);
       console.log(data);
-      setSuccess("Login successful!");
+      setSuccess("Category created successfully!");
     } catch (error: any) {
       setError(error.message);
-      console.error("Error fetching products:", error.message);
+      console.error("Error creating category:", error.message);
     }
   };
   return (
-    <>
+    <div className="flex flex-col gap-4 min-h-screen items-center justify-center p-4">
       {error && (
         <Message variant="destructive" title="Error" description={error} />
       )}
@@ -82,57 +79,43 @@ export function LoginForm() {
       )}
       <Card className="w-full max-w-sm">
         <CardHeader className="text-center">
-          <CardTitle>Login</CardTitle>
-          <CardDescription>Login to your account</CardDescription>
+          <CardTitle>Create Category</CardTitle>
+          <CardDescription>
+            Enter the details below to create a new category
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
             <form
-              className="flex flex-col gap-4"
               onSubmit={form.handleSubmit(onSubmit)}
+              className="flex flex-col gap-2"
             >
               <FormField
                 control={form.control}
-                name="email"
+                name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Email address</FormLabel>
+                    <FormLabel>Enter Category Name</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="Email address"
-                        type="email"
-                        {...field}
-                      />
+                      <Input placeholder="Category name" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <PasswordInput placeholder="••••••••" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit">Login</Button>
+              <Button type="submit" className="mt-4">
+                Create
+              </Button>
             </form>
           </Form>
         </CardContent>
-        <CardFooter className="justify-between">
-          <small>Don&apos;t have an account?</small>
+        {/* <CardFooter className="justify-between">
+          <small>Do you want to create category first?</small>
           <Button asChild variant="outline" size="sm">
-            <Link href="/sign-up">Sign up</Link>
+            <Link href="/category">Create Category</Link>
           </Button>
-        </CardFooter>
+        </CardFooter> */}
       </Card>
-    </>
+    </div>
   );
 }
