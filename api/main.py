@@ -5,6 +5,7 @@ from asgi_correlation_id import CorrelationIdMiddleware
 from fastapi import FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from api.database import database
 from api.logging_conf import configure_logging
@@ -40,6 +41,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.mount("/images", StaticFiles(directory="api/images"), name="images")
+app.mount("/thumbnails", StaticFiles(directory="api/thumbnails"), name="thumbnails")
 
 app.include_router(category_router, prefix="/category")
 app.include_router(product_router, prefix="/product")
