@@ -1,4 +1,5 @@
 import logging
+import os
 from contextlib import asynccontextmanager
 
 from asgi_correlation_id import CorrelationIdMiddleware
@@ -41,9 +42,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+images_path = os.path.join(os.path.dirname(__file__), 'images')
+thumbnails_path = os.path.join(os.path.dirname(__file__), 'thumbnails')
 
-app.mount("/api/images", StaticFiles(directory="/api/images"), name="images")
-app.mount("/api/thumbnails", StaticFiles(directory="/api/thumbnails"), name="thumbnails")
+app.mount("/images", StaticFiles(directory=images_path), name="images")
+app.mount("/thumbnails", StaticFiles(directory=thumbnails_path), name="thumbnails")
 
 app.include_router(category_router, prefix="/category")
 app.include_router(product_router, prefix="/product")
