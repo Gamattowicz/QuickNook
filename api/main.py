@@ -42,8 +42,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.mount("/images", StaticFiles(directory="/api/images"), name="images")
-app.mount("/thumbnails", StaticFiles(directory="/api/thumbnails"), name="thumbnails")
+app.mount("/api/images", StaticFiles(directory="/api/images"), name="images")
+app.mount("/api/thumbnails", StaticFiles(directory="/api/thumbnails"), name="thumbnails")
 
 app.include_router(category_router, prefix="/category")
 app.include_router(product_router, prefix="/product")
