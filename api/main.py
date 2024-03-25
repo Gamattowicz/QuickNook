@@ -1,10 +1,12 @@
 import logging
+import os
 from contextlib import asynccontextmanager
 
 from asgi_correlation_id import CorrelationIdMiddleware
 from fastapi import FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from api.database import database
 from api.logging_conf import configure_logging
@@ -40,6 +42,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+images_path = os.path.join(os.path.dirname(__file__), 'images')
+thumbnails_path = os.path.join(os.path.dirname(__file__), 'thumbnails')
+
+app.mount("/images", StaticFiles(directory=images_path), name="images")
+app.mount("/thumbnails", StaticFiles(directory=thumbnails_path), name="thumbnails")
 
 app.include_router(category_router, prefix="/category")
 app.include_router(product_router, prefix="/product")
