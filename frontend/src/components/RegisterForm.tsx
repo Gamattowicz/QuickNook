@@ -44,7 +44,7 @@ const formSchema = z
       return data.password === data.passwordConfirm;
     },
     {
-      message: "Passwords do not match.",
+      message: "Passwords do not match",
       path: ["passwordConfirm"],
     }
   );

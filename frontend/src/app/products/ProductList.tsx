@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Message from "@/components/Message";
-import Product from "@/components/Product";
+import Product from "@/components/product/Product";
 import { ProductProps } from "@/types/productProps";
 
 export default function ProductList() {
@@ -25,17 +25,7 @@ export default function ProductList() {
       console.error("Error fetching products:", error.message);
     }
   }
-  async function fetchProduct2() {
-    try {
-      let endpoint = `http://127.0.0.1:8000/product/product`;
-      const res = await fetch(endpoint);
-      const data = await res.json();
-      setProducts(data.results);
-      console.log(data);
-    } catch (error: any) {
-      console.error("Error fetching products:", error.message);
-    }
-  }
+
   useEffect(() => {
     fetchProduct();
     console.log("ProductList rendered");
