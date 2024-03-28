@@ -208,3 +208,20 @@ async def find_product(product_id: int):
     ).where(product_table.c.id == product_id)
 
     return await database.fetch_one(query)
+
+
+@router.delete("/{product_id}", status_code=204)
+async def delete_product(product_id: int):
+    logger.info(f"Deleting product with id {product_id}")
+
+    async with database.transaction():
+        select_query = product_table.select().where(product_table.c.id == product_id)
+        product = await database.fetch_one(select_query)
+
+        if not product:
+            raise HTTPException(status_code=404, detail="Product not found")
+
+        delete_query = product_table.delete().where(product_table.c.id == product_id)
+        await database.execute(delete_query)
+
+    return {"message": "Product deleted successfully."}
