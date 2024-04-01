@@ -7,6 +7,7 @@ from urllib.parse import urljoin
 import pytest
 from httpx import AsyncClient
 
+from api import security
 from api.routers import product
 
 
@@ -140,18 +141,53 @@ async def test_create_product(async_client: AsyncClient, created_category: dict)
 
 @pytest.mark.anyio
 async def test_delete_existing_product(
-    async_client: AsyncClient, created_product: dict
+    async_client: AsyncClient, created_product: dict, logged_in_token: str
 ):
-    response = await async_client.delete(f"/product/{created_product['id']}")
+    response = await async_client.delete(
+        f"/product/{created_product['id']}",
+        headers={"Authorization": f"Bearer {logged_in_token}"},
+    )
     assert response.status_code == 204
 
 
 @pytest.mark.anyio
-async def test_delete_non_existing_product(async_client: AsyncClient):
+async def test_delete_non_existing_product(
+    async_client: AsyncClient, logged_in_token: str
+):
     non_existing_product_id = 31
-    response = await async_client.delete(f"/product/{non_existing_product_id}")
+    response = await async_client.delete(
+        f"/product/{non_existing_product_id}",
+        headers={"Authorization": f"Bearer {logged_in_token}"},
+    )
 
     assert response.status_code == 404
+
+
+@pytest.mark.anyio
+async def test_delete_product_missing_token(
+    async_client: AsyncClient, created_product: dict
+):
+    response = await async_client.delete(f"/product/{created_product['id']}")
+
+    assert response.status_code == 401
+    assert "Not authenticated" in response.json()["detail"]
+
+
+@pytest.mark.anyio
+async def test_delete_product_expired_token(
+    async_client: AsyncClient, created_product: dict, confirmed_user: dict, mocker
+):
+    mocker.patch("api.security.access_token_expire_minutes", return_value=-1)
+    token = security.create_access_token(
+        confirmed_user["email"], confirmed_user["role"]
+    )
+    response = await async_client.delete(
+        f"/product/{created_product['id']}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+
+    assert response.status_code == 401
+    assert "Token has expired" in response.json()["detail"]
 
 
 @pytest.mark.anyio
