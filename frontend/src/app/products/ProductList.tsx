@@ -26,6 +26,10 @@ export default function ProductList() {
     }
   }
 
+  const refreshProducts = async () => {
+    fetchProduct();
+  };
+
   useEffect(() => {
     fetchProduct();
     console.log("ProductList rendered");
@@ -36,7 +40,7 @@ export default function ProductList() {
       {error && (
         <Message variant="destructive" title="Error" description={error} />
       )}
-      <div className="flex flex-wrap">
+      <div className="flex flex-wrap justify-center">
         {products && products.length <= 0 && (
           <p className="font-bold text-center text-primary text-2xl">
             No product
@@ -50,11 +54,12 @@ export default function ProductList() {
       )} */}
         {products &&
           products.map((product: ProductProps["product"]) => (
-            <div
-              className="w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/5 p-1"
-              key={product.id}
-            >
-              <Product key={product.id} product={product} />
+            <div className="w-64 m-12 sm:m-2" key={product.id}>
+              <Product
+                key={product.id}
+                product={product}
+                onProductDelete={refreshProducts}
+              />
             </div>
           ))}
       </div>

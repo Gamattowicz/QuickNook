@@ -8,4 +8,5 @@ export type ProductProps = {
     price: number;
     thumbnail: string | null;
   };
+  onProductDelete: () => Promise<void>;
 };

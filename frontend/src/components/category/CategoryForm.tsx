@@ -26,7 +26,7 @@ const formSchema = z.object({
   name: z.string(),
 });
 
-export default function ProductForm() {
+export default function CategoryForm() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState("");
 
