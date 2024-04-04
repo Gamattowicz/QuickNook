@@ -1,4 +1,5 @@
-import React from "react";
+"use client";
+import React, { useState } from "react";
 import Link from "next/link";
 
 import { ProductProps } from "@/types/productProps";
@@ -12,7 +13,18 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge, badgeVariants } from "@/components/ui/badge";
-import { ShoppingCart } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { ShoppingCart, Trash2 } from "lucide-react";
 import Image from "next/image";
 
 function filePathToUrl(filePath: string) {
@@ -20,11 +32,41 @@ function filePathToUrl(filePath: string) {
   return `http://127.0.0.1:8000/thumbnails/${fileName}`;
 }
 
-export default function Product({ product }: ProductProps) {
+export default function Product({ product, onProductDelete }: ProductProps) {
+  const [error, setError] = useState(null);
+
+  const deleteHandler = async () => {
+    try {
+      const token = localStorage.getItem("jwt");
+      if (!token) {
+        throw new Error(
+          "You are not authenticated. Please log in and try again."
+        );
+      }
+
+      const res = await fetch(`http://127.0.0.1:8000/product/${product.id}/`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error("Server response:", errorData);
+        throw new Error(errorData.detail);
+      }
+      onProductDelete();
+    } catch (error: any) {
+      setError(error.message);
+      console.error("Error fetching products:", error.message);
+    }
+  };
   return (
-    <Card>
+    <Card className="shadow-lg shadow-primary">
       <CardHeader className="text-center">
-        <CardTitle>{product.name}</CardTitle>
+        <CardTitle>
+          <Link href={`/products/${product.id}/`}>{product.name}</Link>
+        </CardTitle>
         <CardDescription>{product.description}</CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col items-center justify-center">
@@ -49,6 +91,28 @@ export default function Product({ product }: ProductProps) {
           >
             {product.category_name}
           </Link>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="ghost">
+                <Trash2 className="text-destructive" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Product</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete the product &quot;
+                  {product.name}&quot;? This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={deleteHandler}>
+                  Continue
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
           <Badge variant="outline">{product.price}PLN</Badge>
         </div>
       </CardContent>
