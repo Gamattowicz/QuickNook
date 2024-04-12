@@ -2,10 +2,10 @@
 import React, { useState, useEffect } from "react";
 import Message from "@/components/Message";
 import Product from "@/components/product/Product";
-import { ProductProps } from "@/types/productProps";
+import { ProductType } from "@/types/productProps";
 
 export default function ProductList() {
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState<ProductType[]>([]);
   const [error, setError] = useState(null);
 
   async function fetchProduct() {
@@ -46,20 +46,10 @@ export default function ProductList() {
             No product
           </p>
         )}
-        {/* {products[0] && (
-        <Product
-          key={(products[0] as ProductProps["product"]).id}
-          product={products[0] as ProductProps["product"]}
-        />
-      )} */}
         {products &&
-          products.map((product: ProductProps["product"]) => (
+          products.map((product: ProductType) => (
             <div className="w-64 m-12 sm:m-2" key={product.id}>
-              <Product
-                key={product.id}
-                product={product}
-                onProductDelete={refreshProducts}
-              />
+              <Product product={product} onProductDelete={refreshProducts} />
             </div>
           ))}
       </div>
