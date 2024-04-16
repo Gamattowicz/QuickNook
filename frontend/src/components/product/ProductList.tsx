@@ -1,16 +1,20 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Message from "@/components/Message";
+import PaginationSection from "@/components/PaginationSection";
 import Product from "@/components/product/Product";
 import { ProductType } from "@/types/productProps";
 
 export default function ProductList() {
   const [products, setProducts] = useState<ProductType[]>([]);
   const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const [productOnPage, setProductOnPage] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
 
   async function fetchProduct() {
     try {
-      let endpoint = `http://127.0.0.1:8000/product/product`;
+      let endpoint = `http://127.0.0.1:8000/product/product?page=${page}&per_page=${productOnPage}`;
       const res = await fetch(endpoint);
       if (!res.ok) {
         const errorData = await res.json();
@@ -19,6 +23,7 @@ export default function ProductList() {
       }
       const data = await res.json();
       setProducts(data.results);
+      setTotalProducts(data.totalItems);
       console.log(data);
     } catch (error: any) {
       setError(error.message);
@@ -26,14 +31,18 @@ export default function ProductList() {
     }
   }
 
-  const refreshProducts = async () => {
+  const refreshProducts = async (): Promise<void> => {
     fetchProduct();
+  };
+
+  const handlePageChange = (pageNumber: number) => {
+    setPage(pageNumber);
   };
 
   useEffect(() => {
     fetchProduct();
     console.log("ProductList rendered");
-  }, []);
+  }, [page]);
 
   return (
     <div className="flex flex-col gap-4 min-h-screen items-center justify-center p-4">
@@ -53,6 +62,12 @@ export default function ProductList() {
             </div>
           ))}
       </div>
+      <PaginationSection
+        totalProducts={totalProducts}
+        productOnPage={productOnPage}
+        currentPage={page}
+        setCurrentPage={handlePageChange}
+      />
     </div>
   );
 }
