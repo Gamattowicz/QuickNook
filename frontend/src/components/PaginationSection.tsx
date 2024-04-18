@@ -29,9 +29,12 @@ export default function PaginationSection({
   const pageNumLimit = Math.floor(maxPageNum / 2);
 
   let activePages = pageNumbers.slice(
-    Math.max(0, currentPage - 1 - pageNumLimit),
-    Math.min(currentPage - 1 + pageNumLimit + 1, pageNumbers.length)
+    Math.max(1, currentPage - 1 - pageNumLimit),
+    Math.min(currentPage - 1 + pageNumLimit + 1, pageNumbers.length - 1)
   );
+
+  activePages.unshift(1);
+  activePages.push(pageNumbers.length);
 
   const handleNextPage = () => {
     if (currentPage < pageNumbers.length) {
@@ -57,27 +60,19 @@ export default function PaginationSection({
       </PaginationItem>
     ));
 
-    // Add ellipsis at the start if necessary
-    if (activePages[0] > 1) {
-      renderedPages.unshift(
-        <PaginationEllipsis
-          key="ellipsis-start"
-          onClick={() => setCurrentPage(activePages[0] - 1)}
-        />
+    if (activePages[1] > 2) {
+      renderedPages.splice(1, 0, <PaginationEllipsis key="ellipsis-start" />);
+    }
+
+    if (activePages[activePages.length - 2] < pageNumbers.length - 1) {
+      renderedPages.splice(
+        renderedPages.length - 1,
+        0,
+        <PaginationEllipsis key="ellipsis-end" />
       );
     }
 
-    // Add ellipsis at the end if necessary
-    if (activePages[activePages.length - 1] < pageNumbers.length) {
-      renderedPages.push(
-        <PaginationEllipsis
-          key="ellipsis-end"
-          onClick={() =>
-            setCurrentPage(activePages[activePages.length - 1] + 1)
-          }
-        />
-      );
-    }
+    console.log("renderedPages", renderedPages);
 
     return renderedPages;
   };
