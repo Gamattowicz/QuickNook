@@ -149,7 +149,7 @@ async def get_all_product(
         product_table.c.thumbnail,
     ).join(category_table, product_table.c.category_id == category_table.c.id)
 
-    filters_dict = {k: v for k, v in filters if v is not None}
+    filters_dict = {k: v for k, v in filters.dict().items() if v is not None}
     query_with_filters, filters_kv_pairs = apply_filters(
         filters_dict, product_with_category_query
     )
