@@ -316,3 +316,47 @@ async def test_get_all_products_with_pagination_last_page(
         response.json()["prevPageUrl"]
         == f"{base_url}product/product?page={page - 1}&per_page={per_page}"
     )
+
+
+@pytest.mark.anyio
+async def test_filter_name_products(
+    async_client: AsyncClient,
+    created_multiple_product: list,
+):
+    page = 1
+    per_page = 2
+    filter_value = created_multiple_product[0]["name"]
+    response = await async_client.get(
+        f"/product/product?page={page}&per_page={per_page}&name={filter_value}"
+    )
+
+    assert response.status_code == 200
+    assert response.json()["page"] == page
+    assert response.json()["per_page"] == per_page
+    assert response.json()["totalItems"] == 1
+    assert response.json()["results"][0]["name"] == filter_value
+    assert len(response.json()["results"]) == 1
+
+
+@pytest.mark.anyio
+async def test_multiply_filter_products(
+    async_client: AsyncClient,
+    created_multiple_product: list,
+):
+    page = 1
+    per_page = 2
+    filter_name_value = created_multiple_product[0]["name"]
+    filter_description_value = created_multiple_product[0]["description"]
+    filter_price_value = created_multiple_product[0]["price"]
+    response = await async_client.get(
+        f"/product/product?page={page}&per_page={per_page}&name={filter_name_value}&description={filter_description_value}&price={filter_price_value}"
+    )
+
+    assert response.status_code == 200
+    assert response.json()["page"] == page
+    assert response.json()["per_page"] == per_page
+    assert response.json()["totalItems"] == 1
+    assert response.json()["results"][0]["name"] == filter_name_value
+    assert response.json()["results"][0]["description"] == filter_description_value
+    assert response.json()["results"][0]["price"] == filter_price_value
+    assert len(response.json()["results"]) == 1
