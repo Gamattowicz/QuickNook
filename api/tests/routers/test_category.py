@@ -23,7 +23,7 @@ from api import security
 
 @pytest.mark.anyio
 async def test_create_category(async_client: AsyncClient, logged_in_token: str):
-    name = "Test Category"
+    name = "TestCategory"
 
     response = await async_client.post(
         "/category/",
@@ -162,3 +162,22 @@ async def test_get_all_categories_with_pagination_last_page(
         response.json()["prevPageUrl"]
         == f"{base_url}category/category?page={page - 1}&per_page={per_page}"
     )
+
+
+@pytest.mark.anyio
+async def test_filter_name_categories(
+    async_client: AsyncClient, created_category: dict
+):
+    page = 1
+    per_page = 2
+    filter_value = created_category["name"]
+    response = await async_client.get(
+        f"/category/category?page={page}&per_page={per_page}&name={filter_value}"
+    )
+
+    assert response.status_code == 200
+    assert response.json()["page"] == page
+    assert response.json()["per_page"] == per_page
+    assert response.json()["totalItems"] == 1
+    assert response.json()["results"][0]["name"] == filter_value
+    assert len(response.json()["results"]) == 1
