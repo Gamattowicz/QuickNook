@@ -21,6 +21,7 @@ from api.database import category_table, database, product_table
 from api.models.filtering import ProductFilter
 from api.models.pagination import PaginatedResponse
 from api.models.product import Product, ProductWithCategoryName
+from api.models.sorting import ProductSortOptions
 from api.models.user import User
 from api.security import get_current_user
 from api.utils.filtering_helpers import apply_filters
@@ -30,6 +31,7 @@ from api.utils.product_helpers import (
     is_file_too_large,
     sanitize_filename,
 )
+from api.utils.sorting_helpers import apply_sorting
 
 router = APIRouter()
 
@@ -136,6 +138,7 @@ async def get_all_product(
     request: Request,
     page: int = Query(1, gt=0),
     per_page: int = Query(10, gt=0),
+    sort: Optional[ProductSortOptions] = Query(None),
     filters: ProductFilter = Depends(),
 ):
     path = "product/product"
@@ -153,6 +156,9 @@ async def get_all_product(
     query_with_filters, filters_kv_pairs = apply_filters(
         filters_dict, product_with_category_query
     )
+
+    if sort:
+        query_with_filters = apply_sorting(sort, query_with_filters)
 
     return await paginate(
         request,
