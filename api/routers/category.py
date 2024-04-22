@@ -1,5 +1,5 @@
 import logging
-from typing import Annotated
+from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, Query, Request
 
@@ -7,10 +7,12 @@ from api.database import category_table, database
 from api.models.category import Category, CategoryIn
 from api.models.filtering import CategoryFilter
 from api.models.pagination import PaginatedResponse
+from api.models.sorting import CategorySortOptions
 from api.models.user import User
 from api.security import get_current_user
 from api.utils.filtering_helpers import apply_filters
 from api.utils.pagination_helpers import paginate
+from api.utils.sorting_helpers import apply_sorting
 
 router = APIRouter()
 
@@ -37,11 +39,15 @@ async def get_all_category(
     request: Request,
     page: int = Query(1, gt=0),
     per_page: int = Query(10, gt=0),
+    sort: Optional[CategorySortOptions] = Query(None),
     filters: CategoryFilter = Depends(),
 ):
     path = "category/category"
     filters_dict = {k: v for k, v in filters.dict().items() if v is not None}
     query_with_filters, filters_kv_pairs = apply_filters(filters_dict, category_table)
+
+    if sort:
+        query_with_filters = apply_sorting(sort, query_with_filters)
 
     return await paginate(
         request,
