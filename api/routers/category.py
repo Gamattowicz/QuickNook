@@ -58,6 +58,7 @@ async def get_all_category(
         path,
         query_with_filters,
         filters_kv_pairs,
+        sort.value if sort else None,
     )
 
 

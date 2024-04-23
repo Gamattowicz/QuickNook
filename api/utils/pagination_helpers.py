@@ -20,6 +20,7 @@ async def paginate(
     path: str,
     query: sqlalchemy.sql.selectable.Select,
     filters: Optional[dict[str, Any]] = {},
+    sort: Optional[str] = None,
     total: Optional[tuple] = None,
 ) -> PaginatedResponse:
     offset = (page - 1) * per_page
@@ -47,13 +48,15 @@ async def paginate(
         for key, value in filters.items()
     )
 
+    sort_params = f"&sort={sort}" if sort else ""
+
     next_page = (
-        f"{base_url}{path}?page={page + 1}&per_page={per_page}{filter_params}"
+        f"{base_url}{path}?page={page + 1}&per_page={per_page}{filter_params}{sort_params}"
         if offset + per_page < total[0]
         else None
     )
     prev_page = (
-        f"{base_url}{path}?page={page - 1}&per_page={per_page}{filter_params}"
+        f"{base_url}{path}?page={page - 1}&per_page={per_page}{filter_params}{sort_params}"
         if page > 1
         else None
     )
