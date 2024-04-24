@@ -101,7 +101,7 @@ async def test_create_product_with_image(
     response = await async_client.post(
         "/product/", data=form_data, files={"file": open(sample_image, "rb")}
     )
-    print(response.json())
+
     assert response.status_code == 201
     assert {
         "id": 1,
@@ -360,3 +360,137 @@ async def test_multiply_filter_products(
     assert response.json()["results"][0]["description"] == filter_description_value
     assert response.json()["results"][0]["price"] == filter_price_value
     assert len(response.json()["results"]) == 1
+
+
+@pytest.mark.anyio
+async def test_asc_sort_name_products(
+    async_client: AsyncClient,
+    created_multiple_product: list,
+    created_multiple_category: list,
+):
+    page = 1
+    per_page = 2
+    sort_value = "name"
+    response = await async_client.get(
+        f"/product/product?page={page}&per_page={per_page}&sort={sort_value}"
+    )
+    start_index = (page - 1) * per_page
+    for i in range(len(created_multiple_product)):
+        created_multiple_product[i]["category_name"] = created_multiple_category[
+            start_index + i
+        ]["name"]
+        del created_multiple_product[i]["category_id"]
+    fetched_products = sorted(
+        created_multiple_product,
+        key=lambda x: x["name"],
+    )[start_index : page * per_page]
+
+    assert response.status_code == 200
+    assert response.json()["page"] == page
+    assert response.json()["per_page"] == per_page
+    assert response.json()["totalItems"] == 6
+    assert response.json()["results"] == fetched_products
+
+
+@pytest.mark.anyio
+async def test_desc_sort_name_products(
+    async_client: AsyncClient,
+    created_multiple_product: list,
+    created_multiple_category: list,
+):
+    page = 1
+    per_page = 2
+    sort_value = "-name"
+    response = await async_client.get(
+        f"/product/product?page={page}&per_page={per_page}&sort={sort_value}"
+    )
+    start_index = (page - 1) * per_page
+
+    for i in range(len(created_multiple_product)):
+        created_multiple_product[i]["category_name"] = created_multiple_category[
+            start_index + i
+        ]["name"]
+        del created_multiple_product[i]["category_id"]
+    fetched_products = sorted(
+        created_multiple_product, key=lambda x: x["name"], reverse=True
+    )[start_index : page * per_page]
+
+    assert response.status_code == 200
+    assert response.json()["page"] == page
+    assert response.json()["per_page"] == per_page
+    assert response.json()["totalItems"] == 6
+    assert response.json()["results"] == fetched_products
+
+
+@pytest.mark.anyio
+async def test_asc_sort_price_products(
+    async_client: AsyncClient,
+    created_multiple_product: list,
+    created_multiple_category: list,
+):
+    page = 1
+    per_page = 2
+    sort_value = "price"
+    response = await async_client.get(
+        f"/product/product?page={page}&per_page={per_page}&sort={sort_value}"
+    )
+    start_index = (page - 1) * per_page
+    for i in range(len(created_multiple_product)):
+        created_multiple_product[i]["category_name"] = created_multiple_category[
+            start_index + i
+        ]["name"]
+        del created_multiple_product[i]["category_id"]
+    fetched_products = sorted(
+        created_multiple_product,
+        key=lambda x: x["price"],
+    )[start_index : page * per_page]
+
+    assert response.status_code == 200
+    assert response.json()["page"] == page
+    assert response.json()["per_page"] == per_page
+    assert response.json()["totalItems"] == 6
+    assert response.json()["results"] == fetched_products
+
+
+@pytest.mark.anyio
+async def test_desc_sort_price_products(
+    async_client: AsyncClient,
+    created_multiple_product: list,
+    created_multiple_category: list,
+):
+    page = 1
+    per_page = 2
+    sort_value = "-price"
+    response = await async_client.get(
+        f"/product/product?page={page}&per_page={per_page}&sort={sort_value}"
+    )
+    start_index = (page - 1) * per_page
+
+    for i in range(len(created_multiple_product)):
+        created_multiple_product[i]["category_name"] = created_multiple_category[
+            start_index + i
+        ]["name"]
+        del created_multiple_product[i]["category_id"]
+    fetched_products = sorted(
+        created_multiple_product, key=lambda x: x["price"], reverse=True
+    )[start_index : page * per_page]
+
+    assert response.status_code == 200
+    assert response.json()["page"] == page
+    assert response.json()["per_page"] == per_page
+    assert response.json()["totalItems"] == 6
+    assert response.json()["results"] == fetched_products
+
+
+@pytest.mark.anyio
+async def test_not_existing_sort_field_products(
+    async_client: AsyncClient,
+):
+    page = 1
+    per_page = 2
+    sort_value = "description"
+    response = await async_client.get(
+        f"/product/product?page={page}&per_page={per_page}&sort={sort_value}"
+    )
+
+    assert response.status_code == 422

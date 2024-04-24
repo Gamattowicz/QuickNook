@@ -181,3 +181,66 @@ async def test_filter_name_categories(
     assert response.json()["totalItems"] == 1
     assert response.json()["results"][0]["name"] == filter_value
     assert len(response.json()["results"]) == 1
+
+
+@pytest.mark.anyio
+async def test_asc_sort_name_categories(
+    async_client: AsyncClient, created_multiple_category: list
+):
+    page = 1
+    per_page = 2
+    sort_value = "name"
+    response = await async_client.get(
+        f"/category/category?page={page}&per_page={per_page}&sort={sort_value}"
+    )
+
+    assert response.status_code == 200
+    assert response.json()["page"] == page
+    assert response.json()["per_page"] == per_page
+    assert response.json()["totalItems"] == 6
+    assert (
+        response.json()["results"]
+        == sorted(
+            created_multiple_category,
+            key=lambda x: x["name"],
+        )[(page - 1) * per_page : page * per_page]
+    )
+
+
+@pytest.mark.anyio
+async def test_desc_sort_name_categories(
+    async_client: AsyncClient, created_multiple_category: list
+):
+    page = 1
+    per_page = 2
+    sort_value = "-name"
+    response = await async_client.get(
+        f"/category/category?page={page}&per_page={per_page}&sort={sort_value}"
+    )
+
+    assert response.status_code == 200
+    assert response.json()["page"] == page
+    assert response.json()["per_page"] == per_page
+    assert response.json()["totalItems"] == 6
+    assert (
+        response.json()["results"]
+        == sorted(
+            created_multiple_category,
+            key=lambda x: x["name"],
+            reverse=True,
+        )[(page - 1) * per_page : page * per_page]
+    )
+
+
+@pytest.mark.anyio
+async def test_not_existing_sort_field_categories(
+    async_client: AsyncClient,
+):
+    page = 1
+    per_page = 2
+    sort_value = "description"
+    response = await async_client.get(
+        f"/category/category?page={page}&per_page={per_page}&sort={sort_value}"
+    )
+
+    assert response.status_code == 422

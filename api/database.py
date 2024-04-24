@@ -20,7 +20,7 @@ product_table = sqlalchemy.Table(
     sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
     sqlalchemy.Column("name", sqlalchemy.String),
     sqlalchemy.Column("description", sqlalchemy.String),
-    sqlalchemy.Column("price", sqlalchemy.String),
+    sqlalchemy.Column("price", sqlalchemy.Float),
     sqlalchemy.Column(
         "category_id", sqlalchemy.ForeignKey("categories.id"), nullable=False
     ),
