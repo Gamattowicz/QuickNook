@@ -1,7 +1,7 @@
 import logging
 from typing import Any, Union
 
-from sqlalchemy import Table, func, sql
+from sqlalchemy import Table, sql
 from sqlalchemy.sql import Select
 
 logger = logging.getLogger(__name__)
@@ -20,7 +20,7 @@ def apply_filters(
         if value:
             column = getattr(query_source.c, key)
             filters_kv_pairs[key] = value
-            query = query.where(func.lower(column) == func.lower(value))
+            query = query.where(column.ilike(f"%{value}%"))
         else:
             query = query.where(sql.false())
     return query, filters_kv_pairs
