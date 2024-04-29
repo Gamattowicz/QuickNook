@@ -1,9 +1,7 @@
 import logging
-import os
 from pathlib import Path
 from typing import Annotated, Optional
 
-import aiofiles
 from fastapi import (
     APIRouter,
     Depends,
@@ -26,11 +24,7 @@ from api.models.user import User
 from api.security import get_current_user
 from api.utils.filtering_helpers import apply_filters
 from api.utils.pagination_helpers import paginate
-from api.utils.product_helpers import (
-    create_thumbnail,
-    is_file_too_large,
-    sanitize_filename,
-)
+from api.utils.product_helpers import save_product_image
 from api.utils.sorting_helpers import apply_sorting
 
 router = APIRouter()
@@ -69,48 +63,10 @@ async def create_product(
         }
 
         logger.debug(f"DATA: {data}")
-
         if file:
-            logger.debug(f"File {file}\n {file.content_type}\n {file.filename}")
-
-            if file.content_type not in ALLOWED_IMAGE_TYPES:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Invalid image type. Available image type are {ALLOWED_IMAGE_TYPES}",
-                )
-
-            if await is_file_too_large(file, MAX_IMAGE_SIZE, CHUNK_SIZE):
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"The image is too large. Max size is {MAX_IMAGE_SIZE}",
-                )
-            file.file.seek(0)
-
-            file_ext = os.path.splitext(file.filename)[1]
-            if file_ext.lower() not in ALLOWED_IMAGE_EXTENSIONS:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"Invalid file extension. Only available file extension are: {ALLOWED_IMAGE_EXTENSIONS}",
-                )
-
-            safe_filename = sanitize_filename(file.filename)
-            file_location = IMAGE_DIR / safe_filename
-            IMAGE_DIR.mkdir(exist_ok=True)
-
-            logger.debug(f"Safe filename: {safe_filename}")
-            logger.debug(f"File location: {file_location}")
-
-            async with aiofiles.open(file_location, "wb") as out_file:
-                while chunk := await file.read(CHUNK_SIZE):
-                    await out_file.write(chunk)
+            file_location, thumbnail_path = await save_product_image(file)
 
             data["image"] = str(file_location)
-
-            THUMBNAIL_DIR.mkdir(exist_ok=True)
-
-            thumbnail_path = await create_thumbnail(
-                file_location, THUMBNAIL_SIZE, THUMBNAIL_DIR
-            )
             data["thumbnail"] = str(thumbnail_path)
 
         query = product_table.insert().values(data)
@@ -217,3 +173,49 @@ async def delete_product(
         await database.execute(delete_query)
 
     return {"message": "Product deleted successfully."}
+
+
+@router.put("/{product_id}", status_code=200, response_model=Product)
+async def update_product(
+    product_id: int,
+    name: Optional[str] = Form(None),
+    description: Optional[str] = Form(None),
+    price: Optional[float] = Form(None),
+    category_id: Optional[int] = Form(None),
+    file: Optional[UploadFile] = File(None),
+):
+    logger.info(f"Updating product with id {product_id}")
+
+    data = {
+        "name": name,
+        "description": description,
+        "price": price,
+        "category_id": category_id,
+        "image": None,
+    }
+
+    # Remove None values from data
+    data = {k: v for k, v in data.items() if v is not None}
+
+    if file:
+        file_location, thumbnail_path = await save_product_image(file)
+
+        data["image"] = str(file_location)
+        data["thumbnail"] = str(thumbnail_path)
+
+    async with database.transaction():
+        update_query = (
+            product_table.update()
+            .where(product_table.c.id == product_id)
+            .values(**data)
+        )
+
+        await database.execute(update_query)
+
+        select_query = product_table.select().where(product_table.c.id == product_id)
+        product = await database.fetch_one(select_query)
+
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    return product
