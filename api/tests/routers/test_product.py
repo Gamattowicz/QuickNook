@@ -9,6 +9,7 @@ from httpx import AsyncClient
 
 from api import security
 from api.routers import product
+from api.utils import product_helpers
 
 
 async def create_product_with_image(
@@ -76,7 +77,7 @@ def aiofiles_mock_open(mocker):
 @pytest.fixture
 def mock_create_thumbnail(mocker):
     mock = AsyncMock(return_value=product.THUMBNAIL_DIR / "thumbnail_test_image.png")
-    mocker.patch.object(product, "create_thumbnail", new=mock)
+    mocker.patch.object(product_helpers, "create_thumbnail", new=mock)
     return mock
 
 
