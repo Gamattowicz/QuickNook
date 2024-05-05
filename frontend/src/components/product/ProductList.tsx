@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { InputFiltering } from "@/components/InputFiltering";
 import Message from "@/components/Message";
 import PaginationSection from "@/components/PaginationSection";
 import SelectSorting from "@/components/SelectSorting";
@@ -14,6 +15,10 @@ export default function ProductList() {
   const [totalProducts, setTotalProducts] = useState(0);
   const [sortOption, setSortOption] = useState("");
   const [sortDirection, setSortDirection] = useState("ascending");
+  const [filters, setFilters] = useState({
+    name: "",
+    price: "",
+  });
 
   async function fetchProduct() {
     try {
@@ -22,6 +27,11 @@ export default function ProductList() {
         const prefix = sortDirection === "descending" ? "-" : "";
         endpoint += `&sort=${prefix}${sortOption}`;
       }
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) {
+          endpoint += `&${key}=${value}`;
+        }
+      });
       const res = await fetch(endpoint);
       if (!res.ok) {
         const errorData = await res.json();
@@ -49,7 +59,8 @@ export default function ProductList() {
   useEffect(() => {
     fetchProduct();
     console.log("ProductList rendered");
-  }, [page, sortDirection, sortOption]);
+    console.log(filters)
+  }, [page, sortDirection, sortOption, filters]);
 
   return (
     <div className="flex flex-col gap-4 min-h-screen items-center justify-center p-4 w-full">
@@ -62,6 +73,14 @@ export default function ProductList() {
           placeholder="Ascending/Descending"
           options={["ascending", "descending"]} onValueChange={setSortDirection}
         />
+      </div>
+      <div className="flex justify-between space-x-4">
+        <InputFiltering placeholder="Product name"  value={filters.name} filterType="text" onChange={(e) =>
+            setFilters((prev) => ({ ...prev, name: e.target.value }))
+          }/>
+        <InputFiltering placeholder="Product price" value={filters.price} filterType="number" onChange={(e) =>
+            setFilters((prev) => ({ ...prev, price: e.target.value }))
+          }/>
       </div>
       <div className="flex flex-wrap justify-center">
         {products && products.length <= 0 && (
