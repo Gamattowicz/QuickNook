@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -23,6 +23,15 @@ import {
 } from "@/components/ui/card";
 import Link from "next/link";
 import Message from "@/components/Message";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ACCEPTED_IMAGE_MIME_TYPES = ["image/jpeg", "image/jpg", "image/png"];
@@ -60,11 +69,24 @@ const formSchema = z
 export default function ProductForm() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState("");
+  const [categories, setCategories] = useState<{ name: string; id: number }[]>([]);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
+
+  async function fetchCategories() {
+    try {
+      const res = await fetch(
+        'http://127.0.0.1:8000/category/category'
+      );
+      const categoryData = await res.json();
+      setCategories(categoryData.results);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    }
+  }
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
@@ -104,6 +126,11 @@ export default function ProductForm() {
       console.error("Error creating category:", error.message);
     }
   };
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
   return (
     <div className="flex flex-col gap-4 min-h-screen items-center justify-center p-4">
       {error && (
@@ -174,12 +201,23 @@ export default function ProductForm() {
                   <FormItem>
                     <FormLabel>Category</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="Category"
-                        type="number"
-                        step={1}
-                        {...field}
-                      />
+                    <Select
+                      onValueChange={field.onChange}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>Categories</SelectLabel>
+                          {categories.map(category => (
+                            <SelectItem key={category.id} value={String(category.id)}>
+                              {category.name}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
