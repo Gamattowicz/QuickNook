@@ -24,7 +24,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { ShoppingCart, Trash2 } from "lucide-react";
+import { ShoppingCart, Trash2, SquarePenIcon } from "lucide-react";
 import Image from "next/image";
 
 function filePathToUrl(filePath: string) {
@@ -91,6 +91,14 @@ export default function Product({ product, onProductDelete }: ProductProps) {
           >
             {product.category_name}
           </Link>
+          <Link
+              href={`/products/${product.id}/update/`}
+              className="link link-hover link-primary text-shadow-lg"
+            >
+              <Button variant="ghost">
+              <SquarePenIcon className="text-success"/>
+              </Button>
+            </Link>
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="ghost">
