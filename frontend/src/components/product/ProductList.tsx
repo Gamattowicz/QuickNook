@@ -1,11 +1,13 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { listProducts } from "@/redux/features/product/actions/productActions";
 import { InputFiltering } from "@/components/InputFiltering";
 import Message from "@/components/Message";
 import PaginationSection from "@/components/PaginationSection";
 import SelectSorting from "@/components/SelectSorting";
 import Product from "@/components/product/Product";
 import { ProductType } from "@/types/productProps";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 
 export default function ProductList() {
   const [products, setProducts] = useState<ProductType[]>([]);
@@ -19,6 +21,9 @@ export default function ProductList() {
     name: "",
     price: "",
   });
+  const dispatch = useAppDispatch();
+  const productList = useAppSelector((state: any) => state.productsList);
+  const { productsList, loading } = productList;
 
   async function fetchProduct() {
     try {
@@ -59,8 +64,12 @@ export default function ProductList() {
   useEffect(() => {
     fetchProduct();
     console.log("ProductList rendered");
-    console.log(filters)
+    console.log(filters);
   }, [page, sortDirection, sortOption, filters]);
+
+  useEffect(() => {
+    dispatch(listProducts());
+  }, [dispatch]);
 
   return (
     <div className="flex flex-col gap-4 min-h-screen items-center justify-center p-4 w-full">
@@ -68,19 +77,34 @@ export default function ProductList() {
         <Message variant="destructive" title="Error" description={error} />
       )}
       <div className="flex justify-between space-x-4">
-        <SelectSorting placeholder="Sort by..." options={["name", "price"]} onValueChange={setSortOption}/>
+        <SelectSorting
+          placeholder="Sort by..."
+          options={["name", "price"]}
+          onValueChange={setSortOption}
+        />
         <SelectSorting
           placeholder="Ascending/Descending"
-          options={["ascending", "descending"]} onValueChange={setSortDirection}
+          options={["ascending", "descending"]}
+          onValueChange={setSortDirection}
         />
       </div>
       <div className="flex justify-between space-x-4">
-        <InputFiltering placeholder="Product name"  value={filters.name} filterType="text" onChange={(e) =>
+        <InputFiltering
+          placeholder="Product name"
+          value={filters.name}
+          filterType="text"
+          onChange={(e) =>
             setFilters((prev) => ({ ...prev, name: e.target.value }))
-          }/>
-        <InputFiltering placeholder="Product price" value={filters.price} filterType="number" onChange={(e) =>
+          }
+        />
+        <InputFiltering
+          placeholder="Product price"
+          value={filters.price}
+          filterType="number"
+          onChange={(e) =>
             setFilters((prev) => ({ ...prev, price: e.target.value }))
-          }/>
+          }
+        />
       </div>
       <div className="flex flex-wrap justify-center">
         {products && products.length <= 0 && (

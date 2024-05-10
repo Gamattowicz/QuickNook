@@ -3,6 +3,7 @@ import { Roboto_Slab, Lato } from "next/font/google";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import { cn } from "@/lib/utils";
+import Providers from "@/redux/StoreProvider";
 
 const roboto_slab = Roboto_Slab({
   subsets: ["latin"],
@@ -25,9 +26,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={cn(roboto_slab.variable, lato.variable, "dark")}>
-        <Header />
-        <main>{children}</main>
-        <Footer />
+        <Providers>
+          <Header />
+          <main>{children}</main>
+          <Footer />
+        </Providers>
       </body>
     </html>
   );
