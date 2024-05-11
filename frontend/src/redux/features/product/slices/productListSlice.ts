@@ -3,7 +3,13 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { listProducts } from "../actions/productActions";
 
-const initialState = {
+type initialStateType = {
+  productsList: any[];
+  loading: boolean;
+  error: Error | null;
+};
+
+const initialState: initialStateType = {
   productsList: [],
   loading: false,
   error: null,
@@ -25,7 +31,7 @@ const productListSlice = createSlice({
       })
       .addCase(listProducts.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload as null;
+        state.error = action.payload as Error;
       });
   },
 });

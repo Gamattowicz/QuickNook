@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { detailProduct } from "@/redux/features/product/actions/productActions";
 import Message from "@/components/Message";
 import { PageProps } from "@/types/pageProps";
 import {
@@ -14,6 +15,7 @@ import { ProductType } from "@/types/productProps";
 import { Badge, badgeVariants } from "@/components/ui/badge";
 import Image from "next/image";
 import Link from "next/link";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 
 interface ProductDetailProps {
   productId: PageProps["params"]["id"];
@@ -25,32 +27,38 @@ function filePathToUrl(filePath: string) {
 }
 
 export default function ProductDetail({ productId }: ProductDetailProps) {
-  const [product, setProduct] = useState<ProductType | null>(null);
-  const [error, setError] = useState(null);
+  // const [product, setProduct] = useState<ProductType | null>(null);
+  // const [error, setError] = useState(null);
+  const dispatch = useAppDispatch();
+  const productDetail = useAppSelector((state: any) => state.productDetail);
+  const { product, loading, error } = productDetail;
 
-  async function fetchProduct() {
-    try {
-      let endpoint = `http://127.0.0.1:8000/product/${productId}`;
-      const res = await fetch(endpoint);
-      if (!res.ok) {
-        const errorData = await res.json();
-        console.error("Server response:", errorData);
-        throw new Error(errorData.detail);
-      }
-      const data = await res.json();
-      setProduct(data);
-      console.log(data);
-    } catch (error: any) {
-      setError(error.message);
-      console.error("Error fetching products:", error.message);
-    }
-  }
+  // async function fetchProduct() {
+  //   try {
+  //     let endpoint = `http://127.0.0.1:8000/product/${productId}`;
+  //     const res = await fetch(endpoint);
+  //     if (!res.ok) {
+  //       const errorData = await res.json();
+  //       console.error("Server response:", errorData);
+  //       throw new Error(errorData.detail);
+  //     }
+  //     const data = await res.json();
+  //     setProduct(data);
+  //     console.log(data);
+  //   } catch (error: any) {
+  //     setError(error.message);
+  //     console.error("Error fetching products:", error.message);
+  //   }
+  // }
 
   useEffect(() => {
-    fetchProduct();
-    console.log("ProductDetail fetched");
-    console.log(product);
-  }, []);
+    // fetchProduct();
+    if (productId) {
+      dispatch(detailProduct(parseInt(productId)));
+      console.log("ProductDetail fetched");
+      console.log(product);
+    }
+  }, [dispatch, productId]);
 
   return (
     <div className="flex flex-col gap-4 min-h-screen items-center justify-center p-4">
