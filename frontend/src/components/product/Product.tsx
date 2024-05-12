@@ -1,6 +1,7 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import Link from "next/link";
+import { deleteProduct } from "@/redux/features/product/actions/productActions";
 
 import { ProductProps } from "@/types/productProps";
 import {
@@ -26,6 +27,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ShoppingCart, Trash2, SquarePenIcon } from "lucide-react";
 import Image from "next/image";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 
 function filePathToUrl(filePath: string) {
   const fileName = filePath.split("\\").pop();
@@ -33,33 +35,12 @@ function filePathToUrl(filePath: string) {
 }
 
 export default function Product({ product, onProductDelete }: ProductProps) {
-  const [error, setError] = useState(null);
+  const dispatch = useAppDispatch();
+  const productDetail = useAppSelector((state: any) => state.productDetail);
+  const { loading, error } = productDetail;
 
   const deleteHandler = async () => {
-    try {
-      const token = localStorage.getItem("jwt");
-      if (!token) {
-        throw new Error(
-          "You are not authenticated. Please log in and try again."
-        );
-      }
-
-      const res = await fetch(`http://127.0.0.1:8000/product/${product.id}/`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!res.ok) {
-        const errorData = await res.json();
-        console.error("Server response:", errorData);
-        throw new Error(errorData.detail);
-      }
-      onProductDelete();
-    } catch (error: any) {
-      setError(error.message);
-      console.error("Error fetching products:", error.message);
-    }
+    dispatch(deleteProduct({ productId: product.id, onProductDelete }));
   };
   return (
     <Card className="shadow-lg shadow-primary">
@@ -92,13 +73,13 @@ export default function Product({ product, onProductDelete }: ProductProps) {
             {product.category_name}
           </Link>
           <Link
-              href={`/products/${product.id}/update/`}
-              className="link link-hover link-primary text-shadow-lg"
-            >
-              <Button variant="ghost">
-              <SquarePenIcon className="text-success"/>
-              </Button>
-            </Link>
+            href={`/products/${product.id}/update/`}
+            className="link link-hover link-primary text-shadow-lg"
+          >
+            <Button variant="ghost">
+              <SquarePenIcon className="text-success" />
+            </Button>
+          </Link>
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="ghost">

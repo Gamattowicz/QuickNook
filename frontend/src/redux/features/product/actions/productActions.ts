@@ -43,3 +43,37 @@ export const detailProduct = createAsyncThunk<ProductType, number>(
     }
   }
 );
+
+export const deleteProduct = createAsyncThunk<
+  void,
+  { productId: number; onProductDelete: () => void }
+>(
+  "product/delete",
+  async ({ productId, onProductDelete }, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem("jwt");
+      if (!token) {
+        throw new Error(
+          "You are not authenticated. Please log in and try again."
+        );
+      }
+
+      const res = await fetch(`http://127.0.0.1:8000/product/${productId}/`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error("Server response:", errorData);
+        throw new Error(errorData.detail);
+      }
+      onProductDelete();
+    } catch (error) {
+      console.error("Error fetching products:", (error as Error).message);
+      return rejectWithValue((error as Error).message);
+    }
+  }
+);

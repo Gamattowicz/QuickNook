@@ -1,7 +1,7 @@
 "use client";
 
 import { createSlice } from "@reduxjs/toolkit";
-import { detailProduct } from "../actions/productActions";
+import { detailProduct, deleteProduct } from "../actions/productActions";
 
 type initialStateType = {
   product: any;
@@ -35,6 +35,21 @@ const productDetailSlice = createSlice({
         state.success = true;
       })
       .addCase(detailProduct.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as Error;
+      })
+      .addCase(deleteProduct.pending, (state) => {
+        state.loading = true;
+        state.product = null;
+        state.error = null;
+        state.success = null;
+      })
+      .addCase(deleteProduct.fulfilled, (state) => {
+        state.loading = false;
+        state.product = null;
+        state.success = true;
+      })
+      .addCase(deleteProduct.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as Error;
       });
