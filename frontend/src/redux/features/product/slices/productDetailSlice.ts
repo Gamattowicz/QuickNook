@@ -1,13 +1,17 @@
 "use client";
 
 import { createSlice } from "@reduxjs/toolkit";
-import { detailProduct, deleteProduct } from "../actions/productActions";
+import {
+  detailProduct,
+  deleteProduct,
+  createProduct,
+} from "../actions/productActions";
 
 type initialStateType = {
   product: any;
   loading: boolean;
   error: Error | null;
-  success: boolean | null;
+  success: boolean | null | string;
 };
 
 const initialState: initialStateType = {
@@ -50,6 +54,19 @@ const productDetailSlice = createSlice({
         state.success = true;
       })
       .addCase(deleteProduct.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as Error;
+      })
+      .addCase(createProduct.pending, (state) => {
+        state.loading = true;
+        state.product = null;
+      })
+      .addCase(createProduct.fulfilled, (state, action) => {
+        state.loading = false;
+        state.product = action.payload;
+        state.success = "Product created successfully!";
+      })
+      .addCase(createProduct.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as Error;
       });

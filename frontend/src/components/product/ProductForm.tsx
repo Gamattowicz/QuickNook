@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { createProduct } from "@/redux/features/product/actions/productActions";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -31,12 +32,13 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ACCEPTED_IMAGE_MIME_TYPES = ["image/jpeg", "image/jpg", "image/png"];
 
-const formSchema = z
+export const formSchema = z
   .object({
     name: z.string(),
     description: z.string(),
@@ -67,10 +69,13 @@ const formSchema = z
   );
 
 export default function ProductForm() {
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState("");
-  const [categories, setCategories] = useState<{ name: string; id: number }[]>([]);
+  const [categories, setCategories] = useState<{ name: string; id: number }[]>(
+    []
+  );
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const dispatch = useAppDispatch();
+  const productDetail = useAppSelector((state: any) => state.productDetail);
+  const { loading, error, success } = productDetail;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -78,9 +83,7 @@ export default function ProductForm() {
 
   async function fetchCategories() {
     try {
-      const res = await fetch(
-        'http://127.0.0.1:8000/category/category'
-      );
+      const res = await fetch("http://127.0.0.1:8000/category/category");
       const categoryData = await res.json();
       setCategories(categoryData.results);
     } catch (error) {
@@ -90,40 +93,9 @@ export default function ProductForm() {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const token = localStorage.getItem("jwt");
-      if (!token) {
-        throw new Error(
-          "You are not authenticated. Please log in and try again."
-        );
-      }
-
-      const formData = new FormData();
-      for (const key in values) {
-        if (key === "image" && (values.image?.length ?? 0) > 0) {
-          formData.append("file", values.image?.[0] ?? "");
-        } else {
-          const value = values[key as keyof typeof values] ?? "";
-          formData.append(key, String(value));
-        }
-      }
-      const res = await fetch("http://127.0.0.1:8000/product/", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
-      if (!res.ok) {
-        const errorData = await res.json();
-        console.error("Server response:", errorData);
-        throw new Error(errorData.detail);
-      }
-      const data = await res.json();
-      console.log(data);
-      setSuccess("Product created successfully!");
+      await dispatch(createProduct(values)).unwrap();
     } catch (error: any) {
-      setError(error.message);
-      console.error("Error creating category:", error.message);
+      console.error("Error creating product:", error.message);
     }
   };
 
@@ -201,23 +173,24 @@ export default function ProductForm() {
                   <FormItem>
                     <FormLabel>Category</FormLabel>
                     <FormControl>
-                    <Select
-                      onValueChange={field.onChange}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          <SelectLabel>Categories</SelectLabel>
-                          {categories.map(category => (
-                            <SelectItem key={category.id} value={String(category.id)}>
-                              {category.name}
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
+                      <Select onValueChange={field.onChange}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectLabel>Categories</SelectLabel>
+                            {categories.map((category) => (
+                              <SelectItem
+                                key={category.id}
+                                value={String(category.id)}
+                              >
+                                {category.name}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
