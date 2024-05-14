@@ -3,16 +3,21 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { ProductType } from "@/types/productProps";
 import { z } from "zod";
-import { formSchema } from "@/components/product/ProductForm";
+import { formSchema as formCreateSchema } from "@/components/product/ProductForm";
+import { formSchema as formUpdateSchema } from "@/components/product/ProductUpdate";
 
-type ProductValues = z.infer<typeof formSchema>;
+type ProductCreateValues = z.infer<typeof formCreateSchema>;
+type ProductUpdateValues = z.infer<typeof formUpdateSchema>;
 
-export const listProducts = createAsyncThunk(
+export const listProducts = createAsyncThunk<
+  void,
+  { pageNumber: number; perPageNumber: number }
+>(
   "products/list",
-  async (_, { rejectWithValue }) => {
+  async ({ pageNumber, perPageNumber }, { rejectWithValue }) => {
     try {
       const res = await fetch(
-        "http://127.0.0.1:8000/product/product?page=1&per_page=10"
+        `http://127.0.0.1:8000/product/product?page=${pageNumber}&per_page=${perPageNumber}`
       );
       if (!res.ok) {
         const errorData = await res.json();
@@ -82,7 +87,7 @@ export const deleteProduct = createAsyncThunk<
   }
 );
 
-export const createProduct = createAsyncThunk<void, ProductValues>(
+export const createProduct = createAsyncThunk<void, ProductCreateValues>(
   "product/create",
   async (values, { rejectWithValue }) => {
     try {
@@ -123,3 +128,45 @@ export const createProduct = createAsyncThunk<void, ProductValues>(
     }
   }
 );
+
+export const updateProduct = createAsyncThunk<
+  void,
+  { productId: number; values: ProductUpdateValues }
+>("product/update", async ({ productId, values }, { rejectWithValue }) => {
+  try {
+    const token = localStorage.getItem("jwt");
+    if (!token) {
+      throw new Error(
+        "You are not authenticated. Please log in and try again."
+      );
+    }
+
+    const formData = new FormData();
+    for (const key in values) {
+      if (key === "image" && (values.image?.length ?? 0) > 0) {
+        formData.append("file", values.image?.[0] ?? "");
+      } else {
+        const value = values[key as keyof typeof values] ?? "";
+        formData.append(key, String(value));
+      }
+    }
+
+    const res = await fetch(`http://127.0.0.1:8000/product/${productId}/`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      body: formData,
+    });
+    if (!res.ok) {
+      const errorData = await res.json();
+      console.error("Server response:", errorData);
+      throw new Error(errorData.detail);
+    }
+    const data = await res.json();
+    console.log(data);
+  } catch (error) {
+    console.error("Error updating product:", (error as Error).message);
+    return rejectWithValue((error as Error).message);
+  }
+});

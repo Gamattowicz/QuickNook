@@ -5,6 +5,7 @@ import {
   detailProduct,
   deleteProduct,
   createProduct,
+  updateProduct,
 } from "../actions/productActions";
 
 type initialStateType = {
@@ -67,6 +68,19 @@ const productDetailSlice = createSlice({
         state.success = "Product created successfully!";
       })
       .addCase(createProduct.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as Error;
+      })
+      .addCase(updateProduct.pending, (state) => {
+        state.loading = true;
+        state.product = null;
+      })
+      .addCase(updateProduct.fulfilled, (state, action) => {
+        state.loading = false;
+        state.product = action.payload;
+        state.success = "Product updated successfully!";
+      })
+      .addCase(updateProduct.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as Error;
       });

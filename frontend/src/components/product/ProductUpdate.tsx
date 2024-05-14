@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import { updateProduct } from "@/redux/features/product/actions/productActions";
 import { useParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -33,11 +34,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ACCEPTED_IMAGE_MIME_TYPES = ["image/jpeg", "image/jpg", "image/png"];
 
-const formSchema = z
+export const formSchema = z
   .object({
     name: z.string(),
     description: z.string(),
@@ -68,8 +70,8 @@ const formSchema = z
   );
 
 export default function ProductUpdate() {
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState("");
+  // const [error, setError] = useState(null);
+  // const [success, setSuccess] = useState("");
   const searchParams = useParams();
   const productId = searchParams.id;
   const [name, setName] = useState("");
@@ -80,6 +82,9 @@ export default function ProductUpdate() {
     []
   );
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const dispatch = useAppDispatch();
+  const productDetail = useAppSelector((state: any) => state.productDetail);
+  const { loading, error, success } = productDetail;
 
   const { setValue, ...form } = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -114,38 +119,11 @@ export default function ProductUpdate() {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const token = localStorage.getItem("jwt");
-      if (!token) {
-        throw new Error(
-          "You are not authenticated. Please log in and try again."
-        );
-      }
-
-      const formData = new FormData();
-      for (const key in values) {
-        if (key === "image" && (values.image?.length ?? 0) > 0) {
-          formData.append("file", values.image?.[0] ?? "");
-        } else {
-          const value = values[key as keyof typeof values] ?? "";
-          formData.append(key, String(value));
-        }
-      }
-      const res = await fetch(`http://127.0.0.1:8000/product/${productId}/`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      });
-      if (!res.ok) {
-        const errorData = await res.json();
-        console.error("Server response:", errorData);
-        throw new Error(errorData.detail);
-      }
-      setSuccess("Product created successfully!");
+      await dispatch(
+        updateProduct({ productId: Number(productId), values })
+      ).unwrap();
     } catch (error: any) {
-      setError(error.message);
-      console.error("Error creating category:", error.message);
+      console.error("Error updating product:", error.message);
     }
   };
 
