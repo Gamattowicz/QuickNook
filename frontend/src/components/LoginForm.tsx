@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
+import { login } from "@/redux/features/user/actions/userActions";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -24,16 +25,19 @@ import {
 import Link from "next/link";
 
 import { PasswordInput } from "@/components/ui/password-input";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import Message from "@/components/Message";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 
-const formSchema = z.object({
+export const formSchema = z.object({
   email: z.string().email(),
   password: z.string().min(3),
 });
 
 export function LoginForm() {
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState("");
+  const dispatch = useAppDispatch();
+  const userDetail = useAppSelector((state: any) => state.userDetail);
+  const { loading, error, success } = userDetail;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -45,35 +49,14 @@ export function LoginForm() {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const formData = new FormData();
-      for (const key in values) {
-        formData.append(key, values[key as keyof typeof values]);
-      }
-
-      const res = await fetch("http://127.0.0.1:8000/user/token", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
-      });
-      if (!res.ok) {
-        const errorData = await res.json();
-        console.error("Server response:", errorData);
-        throw new Error(errorData.detail);
-      }
-      const data = await res.json();
-      const token = data.access_token;
-      localStorage.setItem("jwt", token);
-      console.log(data);
-      setSuccess("Login successful!");
+      await dispatch(login(values)).unwrap();
     } catch (error: any) {
-      setError(error.message);
-      console.error("Error fetching products:", error.message);
+      console.error("Error login:", error.message);
     }
   };
   return (
     <>
+      {loading && <LoadingSpinner />}
       {error && (
         <Message variant="destructive" title="Error" description={error} />
       )}
